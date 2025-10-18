@@ -4,43 +4,57 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
+// Import product images
+import dolomiteImage from '../assets/attached_assets/generated_images/Dolomite_mineral_powder_0d149fcd.png';
+import talcImage from '../assets/attached_assets/generated_images/Talc_powder_product_dc4e4f6a.png';
+import calciteImage from '../assets/Calcite_mineral_powder_f858afa1.png';
+import limestoneImage from '../assets/attached_assets/generated_images/Limestone_powder_product_33d99b5e.png';
+import silicaImage from '../assets/attached_assets/generated_images/Silica_powder_product_7eef979c.png';
+import chinaClayImage from '../assets/attached_assets/generated_images/China_clay_powder_fced85c3.png';
+
 export default function ProductsSection() {
   const products = [
     {
       name: 'Dolomite Powder',
       description: 'High-purity dolomite powder with excellent whiteness and chemical stability.',
       industries: ['Paints', 'Plastics', 'Rubber'],
-      features: ['High Whiteness', 'Chemical Stability', 'Fine Mesh']
+      features: ['High Whiteness', 'Chemical Stability', 'Fine Mesh'],
+      image: dolomiteImage
     },
     {
       name: 'Talc Powder',
       description: 'Premium grade talc powder offering superior smoothness and oil absorption.',
       industries: ['Cosmetics', 'Paints', 'Paper'],
-      features: ['Ultra-fine', 'High Brightness', 'Oil Absorption']
+      features: ['Ultra-fine', 'High Brightness', 'Oil Absorption'],
+      image: talcImage
     },
     {
       name: 'Calcite Powder',
       description: 'Pure calcite powder with consistent particle size distribution.',
       industries: ['Paints', 'Plastics', 'Construction'],
-      features: ['High Purity', 'Consistent Size', 'Good Dispersion']
+      features: ['High Purity', 'Consistent Size', 'Good Dispersion'],
+      image: calciteImage
     },
     {
       name: 'Limestone Powder',
       description: 'Quality limestone powder for various industrial applications.',
       industries: ['Construction', 'Ceramics', 'Adhesives'],
-      features: ['High Calcium', 'Low Impurity', 'Good Reactivity']
+      features: ['High Calcium', 'Low Impurity', 'Good Reactivity'],
+      image: limestoneImage
     },
     {
       name: 'Silica Powder',
       description: 'Pure silica powder with excellent chemical and thermal properties.',
       industries: ['Glass', 'Ceramics', 'Detergents'],
-      features: ['High Purity', 'Thermal Stability', 'Chemical Inertness']
+      features: ['High Purity', 'Thermal Stability', 'Chemical Inertness'],
+      image: silicaImage
     },
     {
       name: 'China Clay',
       description: 'High-grade china clay with exceptional plasticity and whiteness.',
       industries: ['Ceramics', 'Paper', 'Pharmaceuticals'],
-      features: ['High Plasticity', 'Excellent Whiteness', 'Low Grit']
+      features: ['High Plasticity', 'Excellent Whiteness', 'Low Grit'],
+      image: chinaClayImage
     }
   ];
 
@@ -78,8 +92,15 @@ export default function ProductsSection() {
             return (
               <Card key={index} className="hover-lift group overflow-hidden border-0 shadow-lg bg-white/80 backdrop-blur-sm" data-testid={`card-product-${index}`}>
                 <div className={`aspect-[4/3] overflow-hidden bg-gradient-to-tr ${gradients[index]} flex items-center justify-center relative`}>
-                  <Package className={`h-16 w-16 ${iconColors[index]} animate-float`} style={{ animationDelay: `${index * 0.2}s` }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/10"></div>
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  <div className="absolute top-4 right-4">
+                    <Package className={`h-8 w-8 ${iconColors[index]} drop-shadow-lg`} />
+                  </div>
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center justify-between" data-testid={`text-product-name-${index}`}>
