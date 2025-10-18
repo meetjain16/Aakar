@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 
-/* LIGHT MODE */
+/* LIGHT MODE - Modern Vibrant Color Palette */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -14,13 +14,13 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 0 0% 98%;
+  --background: 0 0% 100%;
 
   --foreground: 220 15% 15%;
 
   --border: 210 8% 88%;
 
-  --card: 0 0% 96%;
+  --card: 0 0% 100%;
 
   --card-foreground: 220 15% 15%;
 
@@ -32,7 +32,7 @@
 
   --sidebar-border: 210 8% 86%;
 
-  --sidebar-primary: 220 85% 25%;
+  --sidebar-primary: 280 85% 60%;
 
   --sidebar-primary-foreground: 0 0% 98%;
 
@@ -40,7 +40,7 @@
 
   --sidebar-accent-foreground: 220 15% 15%;
 
-  --sidebar-ring: 220 85% 35%;
+  --sidebar-ring: 280 85% 70%;
 
   --popover: 210 8% 92%;
 
@@ -48,8 +48,8 @@
 
   --popover-border: 210 8% 84%;
 
-  --primary: 220 85% 25%;
-
+  /* Modern vibrant primary colors */
+  --primary: 280 85% 60%;
   --primary-foreground: 0 0% 98%;
 
   --secondary: 210 8% 88%;
@@ -60,21 +60,30 @@
 
   --muted-foreground: 210 8% 45%;
 
-  --accent: 210 40% 85%;
-
-  --accent-foreground: 220 85% 25%;
+  /* Vibrant accent colors */
+  --accent: 200 85% 55%;
+  --accent-foreground: 0 0% 98%;
 
   --destructive: 0 84% 32%;
 
   --destructive-foreground: 0 0% 98%;
 
   --input: 210 8% 82%;
-  --ring: 220 85% 35%;
-  --chart-1: 220 85% 25%;
-  --chart-2: 210 60% 45%;
-  --chart-3: 35 45% 35%;
-  --chart-4: 190 75% 30%;
-  --chart-5: 280 65% 40%;
+  --ring: 280 85% 70%;
+  
+  /* Modern chart colors */
+  --chart-1: 280 85% 60%;
+  --chart-2: 200 85% 55%;
+  --chart-3: 35 85% 55%;
+  --chart-4: 190 85% 55%;
+  --chart-5: 320 85% 55%;
+  
+  /* Additional vibrant colors for modern design */
+  --gradient-primary: linear-gradient(135deg, hsl(280 85% 60%), hsl(200 85% 55%));
+  --gradient-secondary: linear-gradient(135deg, hsl(35 85% 55%), hsl(190 85% 55%));
+  --gradient-accent: linear-gradient(135deg, hsl(320 85% 55%), hsl(280 85% 60%));
+  --gradient-warm: linear-gradient(135deg, hsl(35 85% 55%), hsl(20 85% 55%));
+  --gradient-cool: linear-gradient(135deg, hsl(200 85% 55%), hsl(190 85% 55%));
 
   --font-sans: Inter, sans-serif;
   --font-heading: 'Poppins', Inter, sans-serif;
@@ -134,13 +143,112 @@ body {
   background-color: hsl(var(--background));
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  transition: background-color 250ms ease, color 250ms ease;
 }
 
 .container { max-width: 1200px; }
 
-/* Accent utility for buttons */
-.bg-accent { background-color: hsl(210 85% 45% / 1); }
-.text-accent { color: hsl(210 85% 45% / 1); }
+/* Modern gradient utilities */
+.logo-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.gradient-secondary {
+  background: var(--gradient-secondary);
+}
+
+.gradient-accent {
+  background: var(--gradient-accent);
+}
+
+.gradient-warm {
+  background: var(--gradient-warm);
+}
+
+.gradient-cool {
+  background: var(--gradient-cool);
+}
+
+/* Modern glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Modern animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Modern hover effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Colorful accent utilities */
+.bg-vibrant-purple { background-color: hsl(280 85% 60%); }
+.bg-vibrant-blue { background-color: hsl(200 85% 55%); }
+.bg-vibrant-orange { background-color: hsl(35 85% 55%); }
+.bg-vibrant-teal { background-color: hsl(190 85% 55%); }
+.bg-vibrant-pink { background-color: hsl(320 85% 55%); }
+
+.text-vibrant-purple { color: hsl(280 85% 60%); }
+.text-vibrant-blue { color: hsl(200 85% 55%); }
+.text-vibrant-orange { color: hsl(35 85% 55%); }
+.text-vibrant-teal { color: hsl(190 85% 55%); }
+.text-vibrant-pink { color: hsl(320 85% 55%); }
 
 /* Make headings use the nicer heading font */
 h1, h2, h3 { font-family: var(--font-heading); }
@@ -174,7 +282,7 @@ h1, h2, h3 { font-family: var(--font-heading); }
 
   --sidebar-border: 220 12% 18%;
 
-  --sidebar-primary: 220 85% 25%;
+  --sidebar-primary: 280 85% 70%;
 
   --sidebar-primary-foreground: 0 0% 98%;
 
@@ -182,7 +290,7 @@ h1, h2, h3 { font-family: var(--font-heading); }
 
   --sidebar-accent-foreground: 0 0% 95%;
 
-  --sidebar-ring: 220 85% 35%;
+  --sidebar-ring: 280 85% 80%;
 
   --popover: 220 12% 14%;
 
@@ -190,8 +298,8 @@ h1, h2, h3 { font-family: var(--font-heading); }
 
   --popover-border: 220 12% 22%;
 
-  --primary: 220 85% 25%;
-
+  /* Vibrant dark mode colors */
+  --primary: 280 85% 70%;
   --primary-foreground: 0 0% 98%;
 
   --secondary: 220 12% 20%;
@@ -202,32 +310,45 @@ h1, h2, h3 { font-family: var(--font-heading); }
 
   --muted-foreground: 210 8% 65%;
 
-  --accent: 220 8% 16%;
+  --accent: 200 85% 65%;
 
-  --accent-foreground: 210 40% 85%;
+  --accent-foreground: 0 0% 98%;
 
   --destructive: 0 84% 32%;
 
   --destructive-foreground: 0 0% 98%;
 
   --input: 220 12% 24%;
-  --ring: 220 85% 35%;
-  --chart-1: 220 85% 65%;
-  --chart-2: 210 60% 75%;
-  --chart-3: 35 45% 65%;
-  --chart-4: 190 75% 70%;
-  --chart-5: 280 65% 70%;
+  --ring: 280 85% 80%;
+  --chart-1: 280 85% 70%;
+  --chart-2: 200 85% 65%;
+  --chart-3: 35 85% 65%;
+  --chart-4: 190 85% 65%;
+  --chart-5: 320 85% 65%;
 
-  --shadow-2xs: 0px 2px 0px 0px hsl(220 85% 25% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(220 85% 25% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 1px 2px -1px hsl(220 85% 25% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 1px 2px -1px hsl(220 85% 25% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 2px 4px -1px hsl(220 85% 25% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 4px 6px -1px hsl(220 85% 25% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 8px 10px -1px hsl(220 85% 25% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(220 85% 25% / 0.00);
+  --shadow-2xs: 0px 2px 0px 0px hsl(280 85% 70% / 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(280 85% 70% / 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 1px 2px -1px hsl(280 85% 70% / 0.00);
+  --shadow: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 1px 2px -1px hsl(280 85% 70% / 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 2px 4px -1px hsl(280 85% 70% / 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 4px 6px -1px hsl(280 85% 70% / 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 8px 10px -1px hsl(280 85% 70% / 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(280 85% 70% / 0.00);
 
 }
+
+/* Smooth small transforms */
+* { transition: background-color 180ms ease, color 180ms ease, transform 180ms ease; }
+
+/* Semantic color utilities */
+.section-title { font-family: var(--font-heading); font-weight: 700; color: hsl(var(--foreground)); }
+.text-success { color: hsl(var(--success) / 1); }
+.bg-success { background-color: hsl(var(--success) / 1); }
+.text-info { color: hsl(var(--info) / 1); }
+.bg-info { background-color: hsl(var(--info) / 1); }
+.text-warning { color: hsl(var(--warning) / 1); }
+.bg-warning { background-color: hsl(var(--warning) / 1); }
+
 
 
 /**
@@ -254,7 +375,7 @@ h1, h2, h3 { font-family: var(--font-heading); }
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
-    @apply hidden;
+    display: none;
   }
 
   /* Placeholder styling for contentEditable div */
@@ -267,9 +388,10 @@ h1, h2, h3 { font-family: var(--font-heading); }
   /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
    * buttons/badges can remove the automatic brightness adjustment on interactions
    * and program their own. */
-  .no-default-hover-elevate {}
+  /* Escape hatches for consumers to opt-out of default interaction elevates */
+  .no-default-hover-elevate { will-change: auto; }
 
-  .no-default-active-elevate {}
+  .no-default-active-elevate { will-change: auto; }
 
 
   /**

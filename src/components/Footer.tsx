@@ -41,39 +41,39 @@ export default function Footer({ onSectionChange }: FooterProps) {
   ];
 
   return (
-    <footer className="bg-card border-t" data-testid="footer">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 text-white" data-testid="footer">
+      <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-md flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">A</span>
+              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl">A</span>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-foreground" data-testid="text-footer-company">
+                <h3 className="text-lg font-bold text-transparent bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text" data-testid="text-footer-company">
                   AAKAR MINERAL INDUSTRY
                 </h3>
-                <p className="text-xs text-muted-foreground">Quality Mineral Powders</p>
+                <p className="text-xs text-white/70">Quality Mineral Powders</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-white/80 leading-relaxed">
               Leading manufacturer of high-quality mineral powders, serving industries across 
               India with over 10 years of expertise from Udaipur, Rajasthan.
             </p>
             
             {/* Contact Info */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 text-sm text-white/80 hover:text-white transition-colors">
+                <MapPin className="h-5 w-5 text-blue-400" />
                 <span>Udaipur, Rajasthan, India</span>
               </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
+              <div className="flex items-center space-x-3 text-sm text-white/80 hover:text-white transition-colors">
+                <Phone className="h-5 w-5 text-green-400" />
                 <span>+91 294 2525252</span>
               </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
+              <div className="flex items-center space-x-3 text-sm text-white/80 hover:text-white transition-colors">
+                <Mail className="h-5 w-5 text-purple-400" />
                 <span>info@aakarmineral.com</span>
               </div>
             </div>
@@ -81,15 +81,15 @@ export default function Footer({ onSectionChange }: FooterProps) {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold text-foreground mb-4" data-testid="text-footer-quick-links">
+            <h4 className="text-lg font-semibold text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text mb-6" data-testid="text-footer-quick-links">
               Quick Links
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.id}>
                   <button
                     onClick={() => handleNavigationClick(link.id)}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors text-left"
+                    className="text-sm text-white/80 hover:text-white transition-colors text-left hover:translate-x-1 transform duration-200"
                     data-testid={`button-footer-nav-${link.id}`}
                   >
                     {link.label}
@@ -101,15 +101,15 @@ export default function Footer({ onSectionChange }: FooterProps) {
 
           {/* Products */}
           <div>
-            <h4 className="text-lg font-semibold text-foreground mb-4" data-testid="text-footer-products">
+            <h4 className="text-lg font-semibold text-transparent bg-gradient-to-r from-green-300 to-teal-300 bg-clip-text mb-6" data-testid="text-footer-products">
               Our Products
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {productLinks.map((product, index) => (
                 <li key={index}>
                   <button
                     onClick={() => handleNavigationClick('products')}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors text-left"
+                    className="text-sm text-white/80 hover:text-white transition-colors text-left hover:translate-x-1 transform duration-200"
                     data-testid={`button-footer-product-${index}`}
                   >
                     {product}
@@ -121,15 +121,15 @@ export default function Footer({ onSectionChange }: FooterProps) {
 
           {/* Industries */}
           <div>
-            <h4 className="text-lg font-semibold text-foreground mb-4" data-testid="text-footer-industries">
+            <h4 className="text-lg font-semibold text-transparent bg-gradient-to-r from-pink-300 to-rose-300 bg-clip-text mb-6" data-testid="text-footer-industries">
               Industries Served
             </h4>
-            <ul className="space-y-2 mb-6">
+            <ul className="space-y-3 mb-8">
               {industries.map((industry, index) => (
                 <li key={index}>
                   <button
                     onClick={() => handleNavigationClick('industries')}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors text-left"
+                    className="text-sm text-white/80 hover:text-white transition-colors text-left hover:translate-x-1 transform duration-200"
                     data-testid={`button-footer-industry-${index}`}
                   >
                     {industry}
@@ -140,66 +140,58 @@ export default function Footer({ onSectionChange }: FooterProps) {
 
             {/* Social Media */}
             <div>
-              <h5 className="text-sm font-semibold text-foreground mb-3">Follow Us</h5>
+              <h5 className="text-sm font-semibold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text mb-4">Follow Us</h5>
               <div className="flex space-x-3">
                 <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
+                  className="h-10 w-10 glass hover:bg-blue-500/20 hover-scale transition-all duration-300" 
                   onClick={() => console.log('Facebook clicked')}
                   data-testid="button-social-facebook"
                 >
-                  <Facebook className="h-4 w-4" />
+                  <Facebook className="h-5 w-5 text-blue-400" />
                 </Button>
                 <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
+                  className="h-10 w-10 glass hover:bg-cyan-500/20 hover-scale transition-all duration-300" 
                   onClick={() => console.log('Twitter clicked')}
                   data-testid="button-social-twitter"
                 >
-                  <Twitter className="h-4 w-4" />
+                  <Twitter className="h-5 w-5 text-cyan-400" />
                 </Button>
                 <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
+                  className="h-10 w-10 glass hover:bg-blue-600/20 hover-scale transition-all duration-300" 
                   onClick={() => console.log('LinkedIn clicked')}
                   data-testid="button-social-linkedin"
                 >
-                  <Linkedin className="h-4 w-4" />
+                  <Linkedin className="h-5 w-5 text-blue-500" />
                 </Button>
                 <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
+                  className="h-10 w-10 glass hover:bg-pink-500/20 hover-scale transition-all duration-300" 
                   onClick={() => console.log('Instagram clicked')}
                   data-testid="button-social-instagram"
                 >
-                  <Instagram className="h-4 w-4" />
+                  <Instagram className="h-5 w-5 text-pink-400" />
                 </Button>
               </div>
             </div>
           </div>
         </div>
 
-        <Separator className="my-8" />
+        <Separator className="my-8 bg-white/20" />
 
         {/* Copyright */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-sm text-muted-foreground" data-testid="text-copyright">
+          <p className="text-sm text-white/70" data-testid="text-copyright">
             © 2024 AAKAR MINERAL INDUSTRY. All rights reserved.
           </p>
-          <div className="flex space-x-6 text-sm text-muted-foreground">
+          <div className="flex space-x-6 text-sm text-white/70">
             <button 
-              className="hover:text-primary transition-colors"
+              className="hover:text-white transition-colors hover:underline"
               onClick={() => console.log('Privacy Policy clicked')}
               data-testid="button-privacy-policy"
             >
               Privacy Policy
             </button>
             <button 
-              className="hover:text-primary transition-colors"
+              className="hover:text-white transition-colors hover:underline"
               onClick={() => console.log('Terms of Service clicked')}
               data-testid="button-terms"
             >

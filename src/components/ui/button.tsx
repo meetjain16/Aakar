@@ -14,6 +14,14 @@ const buttonVariants = cva(
           "bg-primary text-primary-foreground border border-primary-border",
         destructive:
           "bg-destructive text-destructive-foreground border border-destructive-border",
+        accent:
+          "bg-accent text-accent-foreground border border-[color:var(--accent-border)] shadow-md hover:shadow-lg",
+        success:
+          "bg-success text-success-foreground border border-[color:var(--success-foreground)] shadow-sm hover:shadow-md",
+        info:
+          "bg-info text-info-foreground border border-[color:var(--info-foreground)] shadow-sm hover:shadow-md",
+        warning:
+          "bg-warning text-warning-foreground border border-[color:var(--warning-foreground)] shadow-sm hover:shadow-md",
         outline:
           // Shows the background color of whatever card / sidebar / accent background it is inside of.
           // Inherits the current text color.

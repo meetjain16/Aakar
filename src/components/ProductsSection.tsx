@@ -2,6 +2,7 @@
 import { Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 
 export default function ProductsSection() {
   const products = [
@@ -44,81 +45,110 @@ export default function ProductsSection() {
   ];
 
   return (
-    <section className="py-24 bg-background" data-testid="section-products">
+    <section className="py-24 bg-gradient-to-br from-purple-50/50 via-blue-50/50 to-teal-50/50" data-testid="section-products">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-6" data-testid="text-products-title">
+          <h2 className="text-4xl font-bold text-transparent bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 bg-clip-text mb-6" data-testid="text-products-title">
             Our Premium Mineral Powders
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Discover our comprehensive range of high-quality mineral powders, 
-            each carefully processed to meet specific industrial requirements.
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Discover our range of carefully processed mineral powders tailored to industry needs.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, index) => (
-            <Card key={index} className="hover-elevate group overflow-hidden" data-testid={`card-product-${index}`}>
-              <div className="aspect-[4/3] overflow-hidden bg-muted/50 flex items-center justify-center">
-                <Package className="h-16 w-16 text-muted-foreground" />
-              </div>
-              <CardHeader>
-                <CardTitle className="text-xl" data-testid={`text-product-name-${index}`}>
-                  {product.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {product.description}
-                </p>
-                
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Key Features:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {product.features.map((feature, featureIndex) => (
-                      <Badge 
-                        key={featureIndex} 
-                        variant="secondary" 
-                        className="text-xs"
-                        data-testid={`badge-feature-${index}-${featureIndex}`}
-                      >
-                        {feature}
-                      </Badge>
-                    ))}
-                  </div>
+          {products.map((product, index) => {
+            const gradients = [
+              'from-purple-500/20 to-pink-500/20',
+              'from-blue-500/20 to-teal-500/20', 
+              'from-orange-500/20 to-yellow-500/20',
+              'from-green-500/20 to-emerald-500/20',
+              'from-indigo-500/20 to-purple-500/20',
+              'from-rose-500/20 to-pink-500/20'
+            ];
+            const iconColors = [
+              'text-purple-500',
+              'text-blue-500',
+              'text-orange-500', 
+              'text-green-500',
+              'text-indigo-500',
+              'text-rose-500'
+            ];
+            
+            return (
+              <Card key={index} className="hover-lift group overflow-hidden border-0 shadow-lg bg-white/80 backdrop-blur-sm" data-testid={`card-product-${index}`}>
+                <div className={`aspect-[4/3] overflow-hidden bg-gradient-to-tr ${gradients[index]} flex items-center justify-center relative`}>
+                  <Package className={`h-16 w-16 ${iconColors[index]} animate-float`} style={{ animationDelay: `${index * 0.2}s` }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/10"></div>
                 </div>
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center justify-between" data-testid={`text-product-name-${index}`}>
+                    <span>{product.name}</span>
+                    <Badge variant="secondary" className="text-xs hidden sm:inline-block gradient-primary text-white">Popular</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {product.description}
+                  </p>
+                  
+                  <div>
+                    <h4 className="font-medium text-foreground mb-2">Key Features:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {product.features.map((feature, featureIndex) => (
+                        <Badge 
+                          key={featureIndex} 
+                          className={`text-xs ${iconColors[index]} bg-gradient-to-r ${gradients[index]} text-white border-0`}
+                          data-testid={`badge-feature-${index}-${featureIndex}`}
+                        >
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
 
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Industries Served:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {product.industries.map((industry, industryIndex) => (
-                      <Badge 
-                        key={industryIndex} 
-                        variant="outline" 
-                        className="text-xs"
-                        data-testid={`badge-industry-${index}-${industryIndex}`}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-2">
+                      {product.industries.map((industry, industryIndex) => (
+                        <Badge 
+                          key={industryIndex} 
+                          variant="outline" 
+                          className="text-xs border-purple-200 text-purple-600 hover:bg-purple-50"
+                          data-testid={`badge-industry-${index}-${industryIndex}`}
+                        >
+                          {industry}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div>
+                      <Button 
+                        className={`gradient-primary text-white border-0 shadow-md hover-lift ${iconColors[index]}`}
+                        size="sm" 
+                        onClick={() => console.log('Request quote for', product.name)}
                       >
-                        {industry}
-                      </Badge>
-                    ))}
+                        Request Quote
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
-        <div className="text-center mt-12">
-          <p className="text-muted-foreground mb-4">
-            Need custom specifications or have questions about our products?
-          </p>
-          <button 
-            className="text-primary font-medium hover:underline"
-            onClick={() => console.log('Contact for custom specifications clicked')}
-            data-testid="button-custom-specs"
-          >
-            Contact us for custom specifications →
-          </button>
+        <div className="text-center mt-16">
+          <div className="glass rounded-2xl p-8 backdrop-blur-md max-w-2xl mx-auto">
+            <p className="text-muted-foreground mb-6 text-lg">
+              Need custom specifications or have questions about our products?
+            </p>
+            <Button 
+              className="gradient-accent text-white border-0 shadow-lg hover-lift animate-pulse-glow px-8 py-3 text-lg" 
+              onClick={() => console.log('Contact for custom specifications clicked')} 
+              data-testid="button-custom-specs"
+            >
+              Contact us for custom specifications
+            </Button>
+          </div>
         </div>
       </div>
     </section>

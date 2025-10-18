@@ -1,12 +1,12 @@
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Toaster } from '@/components/ui/toaster';
-import ContactSection from '../ContactSection';
+// import { TooltipProvider } from '../ui/tooltip';
+// import { Toaster } from '../ui/toaster';
 
-export default function ContactSectionExample() {
-  return (
-    <TooltipProvider>
-      <ContactSection />
-      <Toaster />
-    </TooltipProvider>
-  );
-}
+
+// export default function ContactSectionExample() {
+//   return (
+//     <TooltipProvider>
+//       <ContactSection />
+//       <Toaster />
+//     </TooltipProvider>
+//   );
+// }

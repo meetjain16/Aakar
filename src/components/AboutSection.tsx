@@ -27,10 +27,10 @@ export default function AboutSection() {
   ];
 
   return (
-    <section className="py-24 bg-muted/30" data-testid="section-about">
+    <section className="py-24 bg-gradient-to-br from-orange-50/50 via-pink-50/50 to-purple-50/50" data-testid="section-about">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-6" data-testid="text-about-title">
+          <h2 className="text-4xl font-bold text-transparent bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600 bg-clip-text mb-6" data-testid="text-about-title">
             About AAKAR MINERAL INDUSTRY
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -40,8 +40,8 @@ export default function AboutSection() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-16">
-          <div>
-            <h3 className="text-2xl font-bold text-foreground mb-6" data-testid="text-about-story-title">
+          <div className="glass rounded-2xl p-8 backdrop-blur-md">
+            <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text mb-6" data-testid="text-about-story-title">
               Our Story
             </h3>
             <div className="space-y-4 text-muted-foreground">
@@ -64,39 +64,56 @@ export default function AboutSection() {
           </div>
 
           <div className="grid grid-cols-2 gap-6">
-            {values.map((value, index) => (
-              <Card key={index} className="hover-elevate">
-                <CardContent className="p-6 text-center">
-                  <value.icon className="h-8 w-8 text-primary mx-auto mb-4" />
-                  <h4 className="font-semibold text-foreground mb-2" data-testid={`text-value-${index}`}>
-                    {value.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {value.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {values.map((value, index) => {
+              const gradients = [
+                'from-orange-500/20 to-pink-500/20',
+                'from-pink-500/20 to-purple-500/20',
+                'from-purple-500/20 to-indigo-500/20',
+                'from-indigo-500/20 to-blue-500/20'
+              ];
+              const iconColors = [
+                'text-orange-500',
+                'text-pink-500',
+                'text-purple-500',
+                'text-indigo-500'
+              ];
+              
+              return (
+                <Card key={index} className="hover-lift glass backdrop-blur-md border-0 shadow-lg">
+                  <CardContent className="p-6 text-center">
+                    <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br ${gradients[index]} flex items-center justify-center`}>
+                      <value.icon className={`h-8 w-8 ${iconColors[index]}`} />
+                    </div>
+                    <h4 className="font-semibold text-foreground mb-2" data-testid={`text-value-${index}`}>
+                      {value.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {value.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <h4 className="text-3xl font-bold text-primary mb-2" data-testid="text-stat-years">10+</h4>
-            <p className="text-muted-foreground">Years Experience</p>
+          <div className="glass rounded-2xl p-6 backdrop-blur-md hover-lift">
+            <h4 className="text-4xl font-bold text-transparent bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text mb-2" data-testid="text-stat-years">10+</h4>
+            <p className="text-muted-foreground font-medium">Years Experience</p>
           </div>
-          <div>
-            <h4 className="text-3xl font-bold text-primary mb-2" data-testid="text-stat-products">6</h4>
-            <p className="text-muted-foreground">Product Categories</p>
+          <div className="glass rounded-2xl p-6 backdrop-blur-md hover-lift">
+            <h4 className="text-4xl font-bold text-transparent bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text mb-2" data-testid="text-stat-products">6</h4>
+            <p className="text-muted-foreground font-medium">Product Categories</p>
           </div>
-          <div>
-            <h4 className="text-3xl font-bold text-primary mb-2" data-testid="text-stat-industries">9</h4>
-            <p className="text-muted-foreground">Industries Served</p>
+          <div className="glass rounded-2xl p-6 backdrop-blur-md hover-lift">
+            <h4 className="text-4xl font-bold text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text mb-2" data-testid="text-stat-industries">9</h4>
+            <p className="text-muted-foreground font-medium">Industries Served</p>
           </div>
-          <div>
-            <h4 className="text-3xl font-bold text-primary mb-2" data-testid="text-stat-clients">500+</h4>
-            <p className="text-muted-foreground">Satisfied Clients</p>
+          <div className="glass rounded-2xl p-6 backdrop-blur-md hover-lift">
+            <h4 className="text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text mb-2" data-testid="text-stat-clients">500+</h4>
+            <p className="text-muted-foreground font-medium">Satisfied Clients</p>
           </div>
         </div>
       </div>
