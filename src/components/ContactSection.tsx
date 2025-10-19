@@ -84,7 +84,7 @@ export default function ContactSection() {
       toast({
         title: "Error Sending Message",
         description: "Please try again or contact us directly.",
-        variant: "destructive",
+        // variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
