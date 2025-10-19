@@ -4,6 +4,7 @@ import HeroSection from '../components/HeroSection';
 import ProductsSection from '../components/ProductsSection';
 import IndustriesSection from '../components/IndustriesSection';
 import QualitySection from '../components/QualitySection';
+import ContactSection from '../components/ContactSection';
 
 import Footer from '../components/Footer';
 import Header from '../components/Header';
@@ -58,7 +59,10 @@ export default function Home() {
           <QualitySection />
         </div>
         
-    
+        <div id="contact">
+          <ContactSection />
+        </div>
+        
       </main>
       
       <Footer onSectionChange={handleSectionChange} />
