@@ -47,22 +47,23 @@ export default function ContactSection() {
     }));
   };
 
+  // ---------- FORM SUBMIT WITH FORMSPREE ----------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
+      const response = await fetch("https://formspree.io/f/xwpyvlrl", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       });
 
       if (response.ok) {
-        setSubmitStatus('success');
+        setSubmitStatus("success");
         setFormData({
           name: '',
           email: '',
@@ -72,24 +73,25 @@ export default function ContactSection() {
           message: '',
           inquiryType: ''
         });
+
         toast({
           title: "Message Sent Successfully!",
-          description: "Thank you for your inquiry. We'll get back to you within 24 hours.",
+          description: "Your inquiry has been delivered to our inbox.",
         });
       } else {
-        throw new Error('Failed to send message');
+        throw new Error("Form submission failed");
       }
     } catch (error) {
-      setSubmitStatus('error');
+      setSubmitStatus("error");
       toast({
         title: "Error Sending Message",
-        description: "Please try again or contact us directly.",
-        // variant: "destructive",
+        description: String((error as Error).message),
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+  // -------------------------------------------------
 
   const contactInfo = [
     {
