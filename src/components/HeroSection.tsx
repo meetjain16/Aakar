@@ -1,201 +1,247 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowRight, Award, ChevronLeft, ChevronRight, Factory, Truck } from 'lucide-react';
 
-import { useEffect, useRef, useState } from 'react';
-import a from '../assets/attached_assets/generated_images/Talc_powder_product_dc4e4f6a.png';
-import b from '../assets/Calcite_mineral_powder_f858afa1.png';
-import c from '../assets/Calcite_mineral_powder_f858afa1.png';
-import { ArrowRight, Award, Users, Factory, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
+import { cn } from '../lib/utils';
+import { useReducedMotion } from '../hooks/use-reduced-motion';
+import { company, products, yearsInBusiness, type SectionId } from '../lib/site';
+
+const SLIDE_INTERVAL_MS = 6000;
+
+/** One slide per showcase product, so the images are never duplicated. */
+const slides = products.slice(0, 4).map((product) => ({
+  id: product.slug,
+  image: product.image,
+  name: product.name,
+}));
+
+const trustPoints = [
+  {
+    icon: Award,
+    value: `${yearsInBusiness}+ years`,
+    label: 'Milling minerals in Udaipur',
+  },
+  {
+    icon: Factory,
+    value: '10,000 T',
+    label: 'Monthly production capacity',
+  },
+  {
+    icon: Truck,
+    value: '3–5 days',
+    label: 'Typical pan-India dispatch',
+  },
+];
 
 interface HeroSectionProps {
-  onEnquireClick?: () => void;
+  onNavigate?: (section: SectionId) => void;
 }
 
-export default function HeroSection({ onEnquireClick }: HeroSectionProps) {
-  const handleEnquireClick = () => {
-    onEnquireClick?.();
-    console.log('Enquire Now clicked');
-  };
-
-  // Image list for the carousel. Replace with your own image paths or imports.
-  const images = [a, b,c];
-
+export default function HeroSection({ onNavigate }: HeroSectionProps) {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const intervalRef = useRef<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const regionRef = useRef<HTMLDivElement>(null);
 
+  const goTo = useCallback((next: number) => {
+    setIndex(((next % slides.length) + slides.length) % slides.length);
+  }, []);
+
+  const goPrev = useCallback(() => goTo(index - 1), [goTo, index]);
+  const goNext = useCallback(() => goTo(index + 1), [goTo, index]);
+
+  // Autoplay pauses on hover, on keyboard focus inside the carousel, while the
+  // tab is hidden, and entirely when reduced motion is requested.
   useEffect(() => {
-    // clear existing
-    if (intervalRef.current) window.clearInterval(intervalRef.current);
-    if (!paused) {
-      intervalRef.current = window.setInterval(() => {
-        setIndex((i) => (i + 1) % images.length);
-      }, 3500);
-    }
-    return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
-    };
-  }, [images.length, paused]);
+    if (isPaused || prefersReducedMotion) return;
 
-  const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
-  const next = () => setIndex((i) => (i + 1) % images.length);
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setIndex((current) => (current + 1) % slides.length);
+      }
+    }, SLIDE_INTERVAL_MS);
+
+    return () => window.clearInterval(timer);
+  }, [isPaused, prefersReducedMotion]);
+
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goPrev();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      goNext();
+    }
+  };
 
   return (
     <section
-      className="relative min-h-screen flex items-center overflow-hidden animate-gradient"
-      style={{
-        background: 'linear-gradient(135deg, hsl(280 85% 60%), hsl(200 85% 55%), hsl(35 85% 55%), hsl(190 85% 55%))',
-        backgroundSize: '400% 400%'
-      }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      aria-labelledby="hero-heading"
+      className="relative isolate flex min-h-[calc(100svh-5rem)] items-center overflow-hidden bg-[oklch(0.215_0.016_28)]"
     >
-      {/* Animated background elements */}
+      {/* Background slideshow. Decorative: the product names are announced by
+          the live region on the carousel below, not by these images. */}
       <div className="absolute inset-0 -z-10">
-        {/* Floating geometric shapes */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-float"></div>
-        <div className="absolute top-40 right-20 w-16 h-16 bg-white/10 rounded-lg animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-40 left-20 w-24 h-24 bg-white/10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-20 right-10 w-12 h-12 bg-white/10 rounded-lg animate-float" style={{ animationDelay: '0.5s' }}></div>
-        
-        {/* Background carousel with vibrant overlay */}
-        {images.map((src, i) => (
+        {slides.map((slide, i) => (
           <img
-            key={src}
-            src={src}
-            alt={`hero-${i}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${
-              i === index ? 'opacity-30 scale-100' : 'opacity-0 scale-105'
-            }`} 
-            style={{ filter: 'brightness(0.6) contrast(1.1) saturate(1.2)' }}
+            key={slide.id}
+            src={slide.image}
+            alt=""
+            aria-hidden="true"
+            fetchPriority={i === 0 ? 'high' : 'low'}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            className={cn(
+              'absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out',
+              i === index ? 'opacity-40' : 'opacity-0',
+            )}
           />
         ))}
-        
-        {/* Vibrant gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-blue-500/20 to-teal-500/20 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-pink-500/10 via-orange-500/10 to-yellow-500/10 pointer-events-none" />
+
+        {/* Two-stop scrim: keeps text contrast well above 4.5:1 no matter which
+            image is showing. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.175_0.015_28)] via-[oklch(0.175_0.015_28)]/85 to-[oklch(0.175_0.015_28)]/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.175_0.015_28)] via-transparent to-[oklch(0.175_0.015_28)]/60" />
+        <div className="texture-grid absolute inset-0 opacity-[0.15]" />
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left: Text and CTAs */}
-          <div className="lg:col-span-7 text-left">
-            <div className="glass rounded-2xl p-8 backdrop-blur-md">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight drop-shadow-lg mb-6">
-                Premium Mineral Powders — 
-                <span className="block text-transparent bg-gradient-to-r from-yellow-300 via-pink-300 to-purple-300 bg-clip-text">
-                  Reliable. Pure. Consistent.
-                </span>
-              </h1>
-              <p className="text-lg sm:text-xl text-white/90 max-w-2xl leading-relaxed mb-8">
-                Manufacturer of high-grade mineral powders from Udaipur, Rajasthan. Supplying
-                manufacturers across India with quality-tested materials and on-time delivery.
-              </p>
+      <div className="section-shell py-20 lg:py-24">
+        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+          {/* Copy */}
+          <div className="lg:col-span-7">
+            <p className="eyebrow text-[oklch(0.83_0.062_58)]">
+              <span className="h-px w-8 bg-current" aria-hidden="true" />
+              {company.city}, {company.region} · Since {company.foundedYear}
+            </p>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <Button
-                  size="lg"
-                  onClick={handleEnquireClick}
-                  data-testid="button-hero-enquire"
-                  className="px-8 py-4 text-lg font-semibold bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white border-0 shadow-lg hover-lift animate-pulse-glow"
-                >
-                  Get Quote Now
-                  <ArrowRight className="ml-3 h-5 w-5" />
-                </Button>
+            <h1
+              id="hero-heading"
+              className="mt-5 max-w-2xl font-heading text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl"
+            >
+              Industrial mineral powders you can specify once and forget about.
+            </h1>
 
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-white px-6 py-3 font-medium glass hover:bg-white/10 border-white/30 hover-scale"
-                  data-testid="button-hero-products"
-                >
-                  View Products
-                </Button>
-              </div>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/75">
+              With over {yearsInBusiness} years of expertise, we deliver
+              premium mineral powders — dolomite, talc, calcite, limestone,
+              silica and china clay — crafted with precision to power industries
+              across India and beyond.
+            </p>
+
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button
+                size="lg"
+                onClick={() => onNavigate?.('contact')}
+                data-testid="button-hero-enquire"
+              >
+                Request a quote
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Button>
+
+              {/* Previously a dead button — now scrolls to the catalogue. */}
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => onNavigate?.('products')}
+                className="border-white/25 bg-white/5 text-white hover:bg-white/10"
+                data-testid="button-hero-products"
+              >
+                View products
+              </Button>
             </div>
 
-            {/* Slide dots */}
-            <div className="flex items-center gap-2 mt-6">
-              {images.map((_, i) => (
-                <button
-                  key={i}
-                  aria-label={`Go to slide ${i + 1}`}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    i === index ? 'bg-white' : 'bg-white/40'
-                  }`}
-                  onClick={() => setIndex(i)}
-                />
+            <dl className="mt-12 grid max-w-xl grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-3">
+              {trustPoints.map(({ icon: Icon, value, label }) => (
+                <div key={value} className="border-l-2 border-white/20 pl-4">
+                  <Icon
+                    className="h-5 w-5 text-[oklch(0.83_0.062_58)]"
+                    aria-hidden="true"
+                  />
+                  <dt className="mt-2 font-heading text-xl font-bold text-white">
+                    {value}
+                  </dt>
+                  <dd className="mt-0.5 text-sm text-white/65">{label}</dd>
+                </div>
               ))}
-            </div>
-
-            {/* Trust chips */}
-            <div className="mt-10 flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-3 glass px-6 py-3 rounded-full hover-scale transition-all duration-300 hover:bg-gradient-to-r hover:from-yellow-500/20 hover:to-orange-500/20">
-                <Award className="h-6 w-6 text-yellow-300" />
-                <div className="text-left">
-                  <div className="text-lg font-semibold text-white">10+ Years</div>
-                  <div className="text-sm text-white/80">of expertise</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 glass px-6 py-3 rounded-full hover-scale transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-teal-500/20">
-                <Users className="h-6 w-6 text-blue-300" />
-                <div className="text-left">
-                  <div className="text-lg font-semibold text-white">Trusted</div>
-                  <div className="text-sm text-white/80">Across India</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 glass px-6 py-3 rounded-full hover-scale transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-pink-500/20">
-                <Factory className="h-6 w-6 text-purple-300" />
-                <div className="text-left">
-                  <div className="text-lg font-semibold text-white">Modern Facilities</div>
-                  <div className="text-sm text-white/80">ISO-certified processes</div>
-                </div>
-              </div>
-            </div>
+            </dl>
           </div>
 
-          {/* Right: Preview card */}
-          <div className="lg:col-span-5 hidden lg:flex items-center justify-center">
-            <div className="w-full max-w-md relative">
-              <div className="glass rounded-3xl p-4 backdrop-blur-md">
-                <img
-                  src={images[index]}
-                  alt={`preview-${index}`}
-                  className="w-full h-72 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover-scale"
-                />
+          {/* Product carousel */}
+          <div className="hidden lg:col-span-5 lg:block">
+            <div
+              ref={regionRef}
+              role="group"
+              aria-roledescription="carousel"
+              aria-label="Featured products"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onFocusCapture={() => setIsPaused(true)}
+              onBlurCapture={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setIsPaused(false);
+                }
+              }}
+              onKeyDown={onKeyDown}
+              className="glass-on-dark relative rounded-2xl p-3"
+            >
+              <div className="relative aspect-4/3 overflow-hidden rounded-xl">
+                {slides.map((slide, i) => (
+                  <img
+                    key={slide.id}
+                    src={slide.image}
+                    alt={slide.name}
+                    loading="lazy"
+                    decoding="async"
+                    aria-hidden={i !== index}
+                    className={cn(
+                      'absolute inset-0 h-full w-full object-cover transition-opacity duration-700',
+                      i === index ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
+                ))}
 
-                {/* Prev / Next controls */}
-                <button
-                  onClick={prev}
-                  aria-label="Previous"
-                  className="absolute left-6 top-1/2 -translate-y-1/2 glass p-3 rounded-full hover:bg-white/20 transition-all duration-300 hover-scale"
-                >
-                  <ChevronLeft className="w-5 h-5 text-white" />
-                </button>
-                <button
-                  onClick={next}
-                  aria-label="Next"
-                  className="absolute right-6 top-1/2 -translate-y-1/2 glass p-3 rounded-full hover:bg-white/20 transition-all duration-300 hover-scale"
-                >
-                  <ChevronRight className="w-5 h-5 text-white" />
-                </button>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-4 pt-10">
+                  <p className="font-heading text-lg font-semibold text-white">
+                    {slides[index].name}
+                  </p>
+                </div>
               </div>
 
-              {/* thumbnails */}
-              <div className="flex gap-3 mt-6 justify-center">
-                {images.map((src, i) => (
-                  <button 
-                    key={src} 
-                    onClick={() => setIndex(i)} 
-                    className={`w-16 h-10 rounded-lg overflow-hidden transition-all duration-300 hover-scale ${
-                      i === index 
-                        ? 'ring-2 ring-white shadow-lg' 
-                        : 'opacity-60 hover:opacity-80'
-                    }`}
-                  >
-                    <img src={src} alt={`thumb-${i}`} className="w-full h-full object-cover" />
-                  </button>
+              <button
+                type="button"
+                onClick={goPrev}
+                aria-label="Previous product"
+                className="absolute left-5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
+              >
+                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                aria-label="Next product"
+                className="absolute right-5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
+              >
+                <ChevronRight className="h-5 w-5" aria-hidden="true" />
+              </button>
+
+              {/* Announces slide changes to screen readers without moving focus. */}
+              <p aria-live="polite" aria-atomic="true" className="sr-only">
+                {`Slide ${index + 1} of ${slides.length}: ${slides[index].name}`}
+              </p>
+
+              <div className="mt-3 flex justify-center gap-2">
+                {slides.map((slide, i) => (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    onClick={() => goTo(i)}
+                    aria-label={`Show ${slide.name}`}
+                    aria-current={i === index}
+                    className={cn(
+                      'h-1.5 rounded-full transition-all duration-300',
+                      i === index ? 'w-7 bg-white' : 'w-3 bg-white/40 hover:bg-white/70',
+                    )}
+                  />
                 ))}
               </div>
             </div>

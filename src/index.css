@@ -1,427 +1,453 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@600;700&display=swap');
 @import "tailwindcss";
 
+/* Tailwind v4: `dark:` should follow the .dark class we toggle on <html>,
+   not the raw OS preference (the ThemeToggle lets users override the OS). */
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* LIGHT MODE - Modern Vibrant Color Palette */
+/* ---------------------------------------------------------------------------
+   Design tokens
+   Drawn from the Aakar Mineral logo: a deep mineral brown (#523D3C) and the
+   warm cream it is set in (#F4EBE6). Both appear here unaltered as --primary
+   and --primary-foreground; every surface, border and accent is a lighter or
+   darker relative of the same warm hue family, so the whole UI reads as one
+   material. Every token is a complete color so it can be consumed directly and
+   composed with color-mix(); Tailwind utilities are mapped from them in
+   @theme below.
+--------------------------------------------------------------------------- */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  color-scheme: light;
 
-  /* Automatic computation of border around primary / danger buttons */
-  --opaque-button-border-intensity: -8; /* In terms of percentages */
+  /* Brand constants — the two colors lifted straight off the logo. */
+  --brand-brown: oklch(0.383 0.030 22);
+  --brand-cream: oklch(0.946 0.012 51);
 
-  /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --background: oklch(0.975 0.008 60);
+  --foreground: oklch(0.265 0.022 25);
 
-  --background: 0 0% 100%;
+  --card: oklch(0.995 0.004 70);
+  --card-foreground: oklch(0.265 0.022 25);
+  --card-border: oklch(0.895 0.010 50);
 
-  --foreground: 220 15% 15%;
+  --popover: oklch(0.995 0.004 70);
+  --popover-foreground: oklch(0.265 0.022 25);
+  --popover-border: oklch(0.895 0.010 50);
 
-  --border: 210 8% 88%;
+  --primary: var(--brand-brown);
+  --primary-foreground: var(--brand-cream);
 
-  --card: 0 0% 100%;
+  --secondary: oklch(0.945 0.010 55);
+  --secondary-foreground: oklch(0.30 0.020 25);
 
-  --card-foreground: 220 15% 15%;
+  --muted: oklch(0.955 0.009 55);
+  --muted-foreground: oklch(0.505 0.018 30);
 
-  --card-border: 210 8% 86%;
+  /* A warmer clay drawn off the same hue family, light enough to separate
+     from --primary at a glance but still unmistakably part of it. */
+  --accent: oklch(0.52 0.088 45);
+  --accent-foreground: oklch(0.975 0.008 60);
 
-  --sidebar: 210 8% 94%;
+  --success: oklch(0.52 0.095 150);
+  --success-foreground: oklch(0.98 0.006 60);
+  --info: oklch(0.52 0.075 235);
+  --info-foreground: oklch(0.98 0.006 60);
+  --warning: oklch(0.70 0.125 72);
+  --warning-foreground: oklch(0.24 0.025 40);
+  --destructive: oklch(0.52 0.185 27);
+  --destructive-foreground: oklch(0.98 0.006 60);
 
-  --sidebar-foreground: 220 15% 15%;
+  --border: oklch(0.895 0.010 50);
+  --input: oklch(0.875 0.012 50);
+  --ring: var(--brand-brown);
 
-  --sidebar-border: 210 8% 86%;
+  --sidebar: oklch(0.962 0.008 58);
+  --sidebar-foreground: oklch(0.265 0.022 25);
+  --sidebar-border: oklch(0.890 0.010 50);
+  --sidebar-primary: var(--brand-brown);
+  --sidebar-primary-foreground: var(--brand-cream);
+  --sidebar-accent: oklch(0.935 0.011 55);
+  --sidebar-accent-foreground: oklch(0.265 0.022 25);
+  --sidebar-ring: var(--brand-brown);
 
-  --sidebar-primary: 280 85% 60%;
+  /* Mineral ramp: brown -> clay -> ochre -> olive -> stone. */
+  --chart-1: oklch(0.45 0.045 25);
+  --chart-2: oklch(0.56 0.088 45);
+  --chart-3: oklch(0.67 0.095 70);
+  --chart-4: oklch(0.58 0.055 120);
+  --chart-5: oklch(0.72 0.030 55);
 
-  --sidebar-primary-foreground: 0 0% 98%;
+  /* Surface treatments ---------------------------------------------------- */
+  /* Translucent panel tint + the hairline that defines its edge. Both are
+     redefined in .dark so `.glass` works in either theme. */
+  --surface-glass: oklch(0.995 0.004 70 / 0.74);
+  --surface-glass-border: oklch(0.265 0.022 25 / 0.10);
+  --surface-veil: oklch(0.265 0.022 25 / 0.045);
 
-  --sidebar-accent: 210 8% 90%;
+  /* Interaction elevation (see the .hover-elevate utilities below) */
+  --elevate-1: oklch(0.265 0.022 25 / 0.05);
+  --elevate-2: oklch(0.265 0.022 25 / 0.10);
+  --button-outline: oklch(0.265 0.022 25 / 0.14);
+  --badge-outline: oklch(0.265 0.022 25 / 0.10);
+  /* How much darker/lighter an opaque button's own border sits (percent L) */
+  --opaque-button-border-intensity: -8%;
 
-  --sidebar-accent-foreground: 220 15% 15%;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  --sidebar-ring: 280 85% 70%;
+  --radius: 0.625rem;
+  /* Height of the sticky header; drives scroll-padding and scroll-mt. */
+  --header-height: 5rem;
 
-  --popover: 210 8% 92%;
+  /* Layered, low-opacity shadows — the previous set was fully transparent,
+     so every `shadow-*` in the app rendered nothing. */
+  --shadow-xs: 0 1px 2px oklch(0.265 0.022 25 / 0.06);
+  --shadow-sm: 0 1px 2px oklch(0.265 0.022 25 / 0.06),
+               0 1px 3px oklch(0.265 0.022 25 / 0.08);
+  --shadow-md: 0 2px 4px oklch(0.265 0.022 25 / 0.06),
+               0 4px 12px oklch(0.265 0.022 25 / 0.08);
+  --shadow-lg: 0 4px 8px oklch(0.265 0.022 25 / 0.06),
+               0 12px 28px oklch(0.265 0.022 25 / 0.10);
+  --shadow-xl: 0 8px 16px oklch(0.265 0.022 25 / 0.08),
+               0 24px 48px oklch(0.265 0.022 25 / 0.12);
 
-  --popover-foreground: 220 15% 15%;
-
-  --popover-border: 210 8% 84%;
-
-  /* Modern vibrant primary colors */
-  --primary: 280 85% 60%;
-  --primary-foreground: 0 0% 98%;
-
-  --secondary: 210 8% 88%;
-
-  --secondary-foreground: 220 15% 15%;
-
-  --muted: 35 20% 92%;
-
-  --muted-foreground: 210 8% 45%;
-
-  /* Vibrant accent colors */
-  --accent: 200 85% 55%;
-  --accent-foreground: 0 0% 98%;
-
-  --destructive: 0 84% 32%;
-
-  --destructive-foreground: 0 0% 98%;
-
-  --input: 210 8% 82%;
-  --ring: 280 85% 70%;
-  
-  /* Modern chart colors */
-  --chart-1: 280 85% 60%;
-  --chart-2: 200 85% 55%;
-  --chart-3: 35 85% 55%;
-  --chart-4: 190 85% 55%;
-  --chart-5: 320 85% 55%;
-  
-  /* Additional vibrant colors for modern design */
-  --gradient-primary: linear-gradient(135deg, hsl(280 85% 60%), hsl(200 85% 55%));
-  --gradient-secondary: linear-gradient(135deg, hsl(35 85% 55%), hsl(190 85% 55%));
-  --gradient-accent: linear-gradient(135deg, hsl(320 85% 55%), hsl(280 85% 60%));
-  --gradient-warm: linear-gradient(135deg, hsl(35 85% 55%), hsl(20 85% 55%));
-  --gradient-cool: linear-gradient(135deg, hsl(200 85% 55%), hsl(190 85% 55%));
-
-  --font-sans: Inter, sans-serif;
-  --font-heading: 'Poppins', Inter, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: .5rem; /* 8px */
-  --shadow-2xs: 0px 2px 0px 0px hsl(220 85% 25% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(220 85% 25% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 1px 2px -1px hsl(220 85% 25% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 1px 2px -1px hsl(220 85% 25% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 2px 4px -1px hsl(220 85% 25% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 4px 6px -1px hsl(220 85% 25% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(220 85% 25% / 0.00), 0px 8px 10px -1px hsl(220 85% 25% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(220 85% 25% / 0.00);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-
-  /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
-
-  /* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* Derived borders for opaque buttons */
+  --primary-border: oklch(from var(--primary) calc(l + var(--opaque-button-border-intensity)) c h);
+  --secondary-border: oklch(from var(--secondary) calc(l + var(--opaque-button-border-intensity)) c h);
+  --accent-border: oklch(from var(--accent) calc(l + var(--opaque-button-border-intensity)) c h);
+  --muted-border: oklch(from var(--muted) calc(l + var(--opaque-button-border-intensity)) c h);
+  --destructive-border: oklch(from var(--destructive) calc(l + var(--opaque-button-border-intensity)) c h);
+  --success-border: oklch(from var(--success) calc(l + var(--opaque-button-border-intensity)) c h);
+  --info-border: oklch(from var(--info) calc(l + var(--opaque-button-border-intensity)) c h);
+  --warning-border: oklch(from var(--warning) calc(l + var(--opaque-button-border-intensity)) c h);
 }
-
-/* Global improvements */
-html, body, #root {
-  height: 100%;
-}
-
-body {
-  font-family: var(--font-sans);
-  color: hsl(var(--foreground));
-  background-color: hsl(var(--background));
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  transition: background-color 250ms ease, color 250ms ease;
-}
-
-.container { max-width: 1200px; }
-
-/* Modern gradient utilities */
-.logo-gradient {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.gradient-primary {
-  background: var(--gradient-primary);
-}
-
-.gradient-secondary {
-  background: var(--gradient-secondary);
-}
-
-.gradient-accent {
-  background: var(--gradient-accent);
-}
-
-.gradient-warm {
-  background: var(--gradient-warm);
-}
-
-.gradient-cool {
-  background: var(--gradient-cool);
-}
-
-/* Modern glassmorphism effects */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.glass-dark {
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Modern animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); }
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
-}
-
-/* Modern hover effects */
-.hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.hover-scale {
-  transition: transform 0.3s ease;
-}
-
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-/* Colorful accent utilities */
-.bg-vibrant-purple { background-color: hsl(280 85% 60%); }
-.bg-vibrant-blue { background-color: hsl(200 85% 55%); }
-.bg-vibrant-orange { background-color: hsl(35 85% 55%); }
-.bg-vibrant-teal { background-color: hsl(190 85% 55%); }
-.bg-vibrant-pink { background-color: hsl(320 85% 55%); }
-
-.text-vibrant-purple { color: hsl(280 85% 60%); }
-.text-vibrant-blue { color: hsl(200 85% 55%); }
-.text-vibrant-orange { color: hsl(35 85% 55%); }
-.text-vibrant-teal { color: hsl(190 85% 55%); }
-.text-vibrant-pink { color: hsl(320 85% 55%); }
-
-/* Make headings use the nicer heading font */
-h1, h2, h3 { font-family: var(--font-heading); }
-
 
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  color-scheme: dark;
 
-  --opaque-button-border-intensity: 9;  /* In terms of percentages */
+  /* The logo's own presentation inverted onto the page: cream set into deep
+     brown. The brand cream carries the text; a lifted tan carries the
+     controls, since the brown itself is too dark to read as a surface here. */
+  --background: oklch(0.228 0.014 30);
+  --foreground: var(--brand-cream);
 
-  /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --card: oklch(0.268 0.016 28);
+  --card-foreground: var(--brand-cream);
+  --card-border: oklch(0.348 0.018 28);
 
-  --background: 220 15% 8%;
+  --popover: oklch(0.278 0.016 28);
+  --popover-foreground: var(--brand-cream);
+  --popover-border: oklch(0.358 0.018 28);
 
-  --foreground: 0 0% 95%;
+  --primary: oklch(0.820 0.042 58);
+  --primary-foreground: oklch(0.245 0.022 25);
 
-  --border: 220 12% 18%;
+  --secondary: oklch(0.312 0.017 28);
+  --secondary-foreground: var(--brand-cream);
 
-  --card: 220 12% 12%;
+  --muted: oklch(0.295 0.016 28);
+  --muted-foreground: oklch(0.735 0.016 45);
 
-  --card-foreground: 0 0% 95%;
+  --accent: oklch(0.720 0.075 48);
+  --accent-foreground: oklch(0.225 0.022 30);
 
-  --card-border: 220 12% 20%;
+  --success: oklch(0.74 0.115 150);
+  --success-foreground: oklch(0.20 0.025 150);
+  --info: oklch(0.74 0.095 235);
+  --info-foreground: oklch(0.20 0.025 235);
+  --warning: oklch(0.81 0.125 78);
+  --warning-foreground: oklch(0.22 0.025 78);
+  --destructive: oklch(0.63 0.175 27);
+  --destructive-foreground: oklch(0.98 0.006 60);
 
-  --sidebar: 220 15% 10%;
+  --border: oklch(0.348 0.018 28);
+  --input: oklch(0.388 0.019 28);
+  --ring: oklch(0.820 0.042 58);
 
-  --sidebar-foreground: 0 0% 95%;
+  --sidebar: oklch(0.248 0.015 28);
+  --sidebar-foreground: var(--brand-cream);
+  --sidebar-border: oklch(0.348 0.018 28);
+  --sidebar-primary: oklch(0.820 0.042 58);
+  --sidebar-primary-foreground: oklch(0.245 0.022 25);
+  --sidebar-accent: oklch(0.308 0.017 28);
+  --sidebar-accent-foreground: var(--brand-cream);
+  --sidebar-ring: oklch(0.820 0.042 58);
 
-  --sidebar-border: 220 12% 18%;
+  --chart-1: oklch(0.820 0.042 58);
+  --chart-2: oklch(0.720 0.075 48);
+  --chart-3: oklch(0.760 0.095 72);
+  --chart-4: oklch(0.720 0.060 120);
+  --chart-5: oklch(0.640 0.030 40);
 
-  --sidebar-primary: 280 85% 70%;
+  --surface-glass: oklch(0.295 0.016 28 / 0.68);
+  --surface-glass-border: oklch(0.946 0.012 51 / 0.12);
+  --surface-veil: oklch(0.946 0.012 51 / 0.055);
 
-  --sidebar-primary-foreground: 0 0% 98%;
+  --elevate-1: oklch(0.946 0.012 51 / 0.06);
+  --elevate-2: oklch(0.946 0.012 51 / 0.12);
+  --button-outline: oklch(0.946 0.012 51 / 0.16);
+  --badge-outline: oklch(0.946 0.012 51 / 0.12);
+  --opaque-button-border-intensity: 9%;
 
-  --sidebar-accent: 220 12% 16%;
-
-  --sidebar-accent-foreground: 0 0% 95%;
-
-  --sidebar-ring: 280 85% 80%;
-
-  --popover: 220 12% 14%;
-
-  --popover-foreground: 0 0% 95%;
-
-  --popover-border: 220 12% 22%;
-
-  /* Vibrant dark mode colors */
-  --primary: 280 85% 70%;
-  --primary-foreground: 0 0% 98%;
-
-  --secondary: 220 12% 20%;
-
-  --secondary-foreground: 0 0% 95%;
-
-  --muted: 220 8% 18%;
-
-  --muted-foreground: 210 8% 65%;
-
-  --accent: 200 85% 65%;
-
-  --accent-foreground: 0 0% 98%;
-
-  --destructive: 0 84% 32%;
-
-  --destructive-foreground: 0 0% 98%;
-
-  --input: 220 12% 24%;
-  --ring: 280 85% 80%;
-  --chart-1: 280 85% 70%;
-  --chart-2: 200 85% 65%;
-  --chart-3: 35 85% 65%;
-  --chart-4: 190 85% 65%;
-  --chart-5: 320 85% 65%;
-
-  --shadow-2xs: 0px 2px 0px 0px hsl(280 85% 70% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(280 85% 70% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 1px 2px -1px hsl(280 85% 70% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 1px 2px -1px hsl(280 85% 70% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 2px 4px -1px hsl(280 85% 70% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 4px 6px -1px hsl(280 85% 70% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(280 85% 70% / 0.00), 0px 8px 10px -1px hsl(280 85% 70% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(280 85% 70% / 0.00);
-
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.32);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.32), 0 1px 3px oklch(0 0 0 / 0.38);
+  --shadow-md: 0 2px 4px oklch(0 0 0 / 0.32), 0 4px 12px oklch(0 0 0 / 0.42);
+  --shadow-lg: 0 4px 8px oklch(0 0 0 / 0.34), 0 12px 28px oklch(0 0 0 / 0.48);
+  --shadow-xl: 0 8px 16px oklch(0 0 0 / 0.38), 0 24px 48px oklch(0 0 0 / 0.54);
 }
 
-/* Smooth small transforms */
-* { transition: background-color 180ms ease, color 180ms ease, transform 180ms ease; }
+/* ---------------------------------------------------------------------------
+   Token -> Tailwind utility mapping.
+   Without this block Tailwind v4 emits nothing for bg-background, text-
+   muted-foreground, border-border, ring-ring, etc. `inline` keeps the
+   var() reference intact so the .dark overrides above cascade normally.
+--------------------------------------------------------------------------- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-/* Semantic color utilities */
-.section-title { font-family: var(--font-heading); font-weight: 700; color: hsl(var(--foreground)); }
-.text-success { color: hsl(var(--success) / 1); }
-.bg-success { background-color: hsl(var(--success) / 1); }
-.text-info { color: hsl(var(--info) / 1); }
-.bg-info { background-color: hsl(var(--info) / 1); }
-.text-warning { color: hsl(var(--warning) / 1); }
-.bg-warning { background-color: hsl(var(--warning) / 1); }
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-border: var(--card-border);
 
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover-border: var(--popover-border);
 
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-border: var(--primary-border);
 
-/**
- * Using the elevate system.
- * Automatic contrast adjustment.
- *
- * <element className="hover-elevate" />
- * <element className="active-elevate-2" />
- *
- * // Using the tailwind utility when a data attribute is "on"
- * <element className="toggle-elevate data-[state=on]:toggle-elevated" />
- * // Or manually controlling the toggle state
- * <element className="toggle-elevate toggle-elevated" />
- *
- * Elevation systems have to handle many states.
- * - not-hovered, vs. hovered vs. active  (three mutually exclusive states)
- * - toggled or not
- * - focused or not (this is not handled with these utilities)
- *
- * Even without handling focused or not, this is six possible combinations that
- * need to be distinguished from eachother visually.
- */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-border: var(--accent-border);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-border: var(--destructive-border);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 12px);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-rise: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade: fade 0.5s ease-out both;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Base layer
+--------------------------------------------------------------------------- */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Sticky header clearance for every in-page anchor target. Without this,
+       jumping to #about lands with the heading underneath the header. */
+    scroll-padding-top: var(--header-height);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100svh;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* A single visible, consistent focus ring for keyboard users everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Never let a raw image overflow its column. */
+  img, svg, video, canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-primary) 25%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Component utilities
+--------------------------------------------------------------------------- */
+@layer components {
+  /* Page gutter + max width, applied once instead of per-section. */
+  .section-shell {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 1024px) {
+    .section-shell { padding-inline: 2rem; }
+  }
+
+  /* Translucent panel that reads correctly in both themes. */
+  .glass {
+    background-color: var(--surface-glass);
+    border: 1px solid var(--surface-glass-border);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+
+  /* Used for the hero, which sits on a dark photographic background in both
+     themes — so it keeps a light-on-dark treatment regardless of theme. */
+  .glass-on-dark {
+    background-color: oklch(1 0 0 / 0.10);
+    border: 1px solid oklch(1 0 0 / 0.18);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  /* Section eyebrow label */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+  }
+
+  /* Hairline grid texture for section backgrounds */
+  .texture-grid {
+    background-image:
+      linear-gradient(var(--surface-veil) 1px, transparent 1px),
+      linear-gradient(90deg, var(--surface-veil) 1px, transparent 1px);
+    background-size: 3rem 3rem;
+  }
+
+  .lift {
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 240ms ease;
+  }
+  .lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Elevation utilities used by button/badge/sidebar.
+   Hover/active tints paint over the element; toggle tints paint behind it, so
+   the two compose without either one hiding the other.
+--------------------------------------------------------------------------- */
 @layer utilities {
-
-  /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
     display: none;
   }
 
-  /* Placeholder styling for contentEditable div */
   [contenteditable][data-placeholder]:empty::before {
     content: attr(data-placeholder);
-    color: hsl(var(--muted-foreground));
+    color: var(--color-muted-foreground);
     pointer-events: none;
   }
 
-  /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
-   * buttons/badges can remove the automatic brightness adjustment on interactions
-   * and program their own. */
-  /* Escape hatches for consumers to opt-out of default interaction elevates */
-  .no-default-hover-elevate { will-change: auto; }
-
+  .no-default-hover-elevate,
   .no-default-active-elevate { will-change: auto; }
 
-
-  /**
-   * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
-   * This way they can stack/compound. Both will overlap the parent's borders!
-   * So borders will be automatically adjusted both on toggle, and hover/active,
-   * and they will be compounded.
-   */
   .toggle-elevate::before,
   .toggle-elevate-2::before {
     content: "";
     pointer-events: none;
     position: absolute;
-    inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
+    inset: 0;
     border-radius: inherit;
     z-index: -1;
-    /* sits behind content but above backdrop */
   }
 
   .toggle-elevate.toggle-elevated::before {
     background-color: var(--elevate-2);
   }
 
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
-  .border.toggle-elevate::before {
-    inset: -1px;
-  }
+  .border.toggle-elevate::before { inset: -1px; }
 
-  /* Does not work on elements with overflow:hidden! */
   .hover-elevate:not(.no-default-hover-elevate),
   .active-elevate:not(.no-default-active-elevate),
   .hover-elevate-2:not(.no-default-hover-elevate),
@@ -437,11 +463,11 @@ h1, h2, h3 { font-family: var(--font-heading); }
     content: "";
     pointer-events: none;
     position: absolute;
-    inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
+    inset: 0;
     border-radius: inherit;
-    z-index: 999;
-    /* sits in front of content */
+    z-index: 2;
+    transition: background-color 150ms ease;
+    background-color: transparent;
   }
 
   .hover-elevate:hover:not(.no-default-hover-elevate)::after,
@@ -454,12 +480,27 @@ h1, h2, h3 { font-family: var(--font-heading); }
     background-color: var(--elevate-2);
   }
 
-  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
-  .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
-  .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
+  .border.hover-elevate::after,
+  .border.active-elevate::after,
+  .border.hover-elevate-2::after,
+  .border.active-elevate-2::after {
     inset: -1px;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion: honour the OS setting. The previous stylesheet ran float,
+   pulse and gradient animations unconditionally.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .lift:hover { transform: none; }
 }

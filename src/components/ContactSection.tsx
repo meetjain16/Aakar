@@ -1,336 +1,552 @@
-import { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { AlertCircle, CheckCircle2, Clock, Mail, MapPin, Phone, Send, UserRound } from 'lucide-react';
+
+import SectionHeading from './SectionHeading';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import { Textarea } from './ui/textarea';
 import { useToast } from '../hooks/use-toast';
+import { cn } from '../lib/utils';
+import { company, inquiryTypes } from '../lib/site';
+
+/** Endpoint is configurable per environment; the literal is only a fallback. */
+const FORM_ENDPOINT =
+  import.meta.env.VITE_CONTACT_ENDPOINT ?? 'https://formspree.io/f/xwpyvlrl';
+
+const SUBMIT_TIMEOUT_MS = 20000;
 
 interface ContactFormData {
   name: string;
   email: string;
   phone: string;
   company: string;
+  inquiryType: string;
   subject: string;
   message: string;
-  inquiryType: string;
 }
 
-export default function ContactSection() {
-  const [formData, setFormData] = useState<ContactFormData>({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    subject: '',
-    message: '',
-    inquiryType: ''
-  });
+type FormErrors = Partial<Record<keyof ContactFormData, string>>;
+
+const emptyForm: ContactFormData = {
+  name: '',
+  email: '',
+  phone: '',
+  company: '',
+  inquiryType: '',
+  subject: '',
+  message: '',
+};
+
+/**
+ * Deliberately permissive: this only catches obvious typos. Anything stricter
+ * rejects valid addresses, and the real check is whether the reply lands.
+ */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/** Accepts +91 / 0 prefixes, spaces, dashes and brackets; 7–15 digits. */
+const PHONE_PATTERN = /^[+]?[\d\s()-]{7,20}$/;
+
+function validate(values: ContactFormData): FormErrors {
+  const errors: FormErrors = {};
+
+  if (!values.name.trim()) {
+    errors.name = 'Please tell us your name.';
+  } else if (values.name.trim().length < 2) {
+    errors.name = 'Please enter your full name.';
+  }
+
+  if (!values.email.trim()) {
+    errors.email = 'We need an email address to reply to.';
+  } else if (!EMAIL_PATTERN.test(values.email.trim())) {
+    errors.email = 'That email address does not look right.';
+  }
+
+  // Optional, but validated when supplied.
+  if (values.phone.trim() && !PHONE_PATTERN.test(values.phone.trim())) {
+    errors.phone = 'Please enter a valid phone number.';
+  }
+
+  // The label has always been marked required — now it actually is.
+  if (!values.inquiryType) {
+    errors.inquiryType = 'Please choose what your enquiry is about.';
+  }
+
+  if (!values.subject.trim()) {
+    errors.subject = 'Please add a short subject.';
+  }
+
+  if (!values.message.trim()) {
+    errors.message = 'Please describe what you need.';
+  } else if (values.message.trim().length < 10) {
+    errors.message = 'A little more detail will get you a better answer.';
+  }
+
+  return errors;
+}
+
+const contactChannels = [
+  {
+    icon: MapPin,
+    title: 'Plant & office',
+    value: company.address,
+    href: `https://maps.google.com/?q=${encodeURIComponent(company.address)}`,
+    external: true,
+  },
+  {
+    icon: UserRound,
+    title: 'Contact person',
+    value: `${company.contactPerson.name} · ${company.contactPerson.role}`,
+    href: `tel:${company.phoneE164}`,
+    external: false,
+  },
+  {
+    icon: Phone,
+    title: 'Phone',
+    value: company.phoneDisplay,
+    href: `tel:${company.phoneE164}`,
+    external: false,
+  },
+  {
+    icon: Mail,
+    title: 'Email',
+    value: company.email,
+    href: `mailto:${company.email}`,
+    external: false,
+  },
+];
+
+interface ContactSectionProps {
+  /** Pre-fills the subject when a visitor clicks "Request a quote" on a product. */
+  prefill?: { subject?: string; inquiryType?: string } | null;
+}
+
+export default function ContactSection({ prefill }: ContactSectionProps) {
+  const [values, setValues] = useState<ContactFormData>(emptyForm);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const fieldId = useId();
+  const id = (field: string) => `${fieldId}-${field}`;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
+  // Honeypot: a real visitor never fills this, bots usually do.
+  const [honeypot, setHoneypot] = useState('');
+
+  useEffect(() => {
+    if (!prefill) return;
+    setValues((current) => ({
+      ...current,
+      subject: prefill.subject ?? current.subject,
+      inquiryType: prefill.inquiryType ?? current.inquiryType,
     }));
+  }, [prefill]);
+
+  // Abort an in-flight request if the component unmounts, so the response
+  // handler never calls setState on a dead component.
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  const setField = <K extends keyof ContactFormData>(
+    field: K,
+    value: ContactFormData[K],
+  ) => {
+    setValues((current) => ({ ...current, [field]: value }));
+    // Clear the error as soon as the visitor starts fixing it.
+    setErrors((current) =>
+      current[field] ? { ...current, [field]: undefined } : current,
+    );
   };
 
-  const handleSelectChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      inquiryType: value
-    }));
-  };
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => setField(e.target.name as keyof ContactFormData, e.target.value);
 
-  // ---------- FORM SUBMIT WITH FORMSPREE ----------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    const nextErrors = validate(values);
+    setErrors(nextErrors);
+
+    const firstInvalid = Object.keys(nextErrors)[0];
+    if (firstInvalid) {
+      setStatus('idle');
+      // Move focus to the first problem rather than leaving the visitor to
+      // hunt for it — especially important on a long form.
+      formRef.current
+        ?.querySelector<HTMLElement>(`[data-field="${firstInvalid}"]`)
+        ?.focus();
+      return;
+    }
+
+    // Silently succeed for bots so they don't retry.
+    if (honeypot) {
+      setStatus('success');
+      setValues(emptyForm);
+      return;
+    }
+
     setIsSubmitting(true);
-    setSubmitStatus('idle');
+    setStatus('idle');
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const timeout = window.setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
 
     try {
-      const response = await fetch("https://formspree.io/f/xwpyvlrl", {
-        method: "POST",
+      const response = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json"
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...values,
+          _subject: `[Website enquiry] ${values.subject}`,
+        }),
+        signal: controller.signal,
       });
 
-      if (response.ok) {
-        setSubmitStatus("success");
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          company: '',
-          subject: '',
-          message: '',
-          inquiryType: ''
-        });
-
-        toast({
-          title: "Message Sent Successfully!",
-          description: "Your inquiry has been delivered to our inbox.",
-        });
-      } else {
-        throw new Error("Form submission failed");
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
       }
-    } catch (error) {
-      setSubmitStatus("error");
+
+      setStatus('success');
+      setValues(emptyForm);
+      setErrors({});
       toast({
-        title: "Error Sending Message",
-        description: String((error as Error).message),
+        title: 'Message sent',
+        description: "Thanks — we'll get back to you within one business day.",
+      });
+    } catch (error) {
+      setStatus('error');
+      // Show a message a customer can act on; keep the raw error in the console
+      // for debugging rather than surfacing it in the UI.
+      console.error('Contact form submission failed:', error);
+      toast({
+        variant: 'destructive',
+        title: "Message couldn't be sent",
+        description: `Please try again, or email us directly at ${company.email}.`,
       });
     } finally {
+      window.clearTimeout(timeout);
+      abortRef.current = null;
       setIsSubmitting(false);
     }
   };
-  // -------------------------------------------------
 
-  const contactInfo = [
-    {
-      icon: MapPin,
-      title: 'Our Location',
-      details: 'Udaipur, Rajasthan, India',
-      color: 'text-blue-400'
-    },
-    {
-      icon: Phone,
-      title: 'Phone Number',
-      details: '+91 294 2525252',
-      color: 'text-green-400'
-    },
-    {
-      icon: Mail,
-      title: 'Email Address',
-      details: 'info@aakarmineral.com',
-      color: 'text-purple-400'
-    }
-  ];
+  const renderError = (field: keyof ContactFormData) =>
+    errors[field] ? (
+      <p
+        id={id(`${field}-error`)}
+        className="flex items-center gap-1.5 text-sm text-destructive"
+      >
+        <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        {errors[field]}
+      </p>
+    ) : null;
+
+  /** Shared props for a field that may be showing an error. */
+  const fieldProps = (field: keyof ContactFormData) => ({
+    id: id(field),
+    name: field,
+    'data-field': field,
+    'aria-invalid': errors[field] ? (true as const) : undefined,
+    'aria-describedby': errors[field] ? id(`${field}-error`) : undefined,
+    className: cn(errors[field] && 'border-destructive focus-visible:ring-destructive'),
+  });
 
   return (
-    <section className="py-24 bg-gradient-to-br from-slate-50/50 via-gray-50/50 to-zinc-50/50" data-testid="section-contact">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-transparent bg-gradient-to-r from-slate-600 via-gray-600 to-zinc-600 bg-clip-text mb-6" data-testid="text-contact-title">
-            Get In Touch
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Ready to discuss your mineral powder requirements? Contact us for quotes, technical support, or any inquiries.
-          </p>
-        </div>
+    <section
+      aria-labelledby="contact-heading"
+      className="border-t border-border bg-background py-20 lg:py-28"
+      data-testid="section-contact"
+    >
+      <div className="section-shell">
+        <SectionHeading
+          id="contact-heading"
+          eyebrow="Contact"
+          title="Tell us what you need to make"
+          description="Send the specification, the volume and the timeline. You will get a real answer from someone who knows the plant — usually within one business day."
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Contact Information */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-slate-600 to-gray-600 bg-clip-text mb-6">
-                Contact Information
-              </h3>
-              <p className="text-muted-foreground mb-8">
-                We're here to help with your mineral powder needs. Reach out to us through any of these channels.
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {contactInfo.map((info, index) => (
-                <Card key={index} className="glass backdrop-blur-md border-0 shadow-lg hover-lift">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/20 to-gray-500/20 flex items-center justify-center`}>
-                        <info.icon className={`h-6 w-6 ${info.color}`} />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-1">{info.title}</h4>
-                        <p className="text-muted-foreground">{info.details}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+        <div className="mt-16 grid gap-10 lg:grid-cols-5 lg:gap-12">
+          {/* Channels */}
+          <div className="space-y-5 lg:col-span-2">
+            <ul className="space-y-4">
+              {contactChannels.map(({ icon: Icon, title, value, href, external }) => (
+                <li key={title}>
+                  <a
+                    href={href}
+                    {...(external
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {})}
+                    className="lift flex items-start gap-4 rounded-xl border border-border bg-card p-5 shadow-sm"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-foreground">
+                        {title}
+                      </span>
+                      <span className="mt-0.5 block break-words text-sm text-muted-foreground">
+                        {value}
+                      </span>
+                    </span>
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
 
-            {/* Business Hours */}
-            <Card className="glass backdrop-blur-md border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg text-transparent bg-gradient-to-r from-slate-600 to-gray-600 bg-clip-text">
-                  Business Hours
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Monday - Friday</span>
-                    <span className="font-medium">9:00 AM - 6:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Saturday</span>
-                    <span className="font-medium">9:00 AM - 2:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Sunday</span>
-                    <span className="font-medium">Closed</span>
-                  </div>
-                </div>
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="flex items-center gap-2 font-heading text-base font-semibold text-foreground">
+                  <Clock className="h-4 w-4 text-primary" aria-hidden="true" />
+                  Business hours
+                </h3>
+                <dl className="mt-4 space-y-2 text-sm">
+                  {company.hours.map(({ days, time }) => (
+                    <div key={days} className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">{days}</dt>
+                      <dd className="font-medium text-foreground">{time}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-4 border-t border-border pt-4 text-xs text-muted-foreground">
+                  All times IST (UTC+5:30).
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Contact Form */}
-          <div className="lg:col-span-2">
-            <Card className="glass backdrop-blur-md border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl text-transparent bg-gradient-to-r from-slate-600 to-gray-600 bg-clip-text">
-                  Send Us a Message
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  Fill out the form below and we'll get back to you as soon as possible.
+          {/* Form */}
+          <div className="lg:col-span-3">
+            <Card>
+              <CardContent className="p-6 sm:p-8">
+                <h3 className="font-heading text-xl font-semibold text-foreground">
+                  Send us a message
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Fields marked{' '}
+                  <span aria-hidden="true" className="text-destructive">
+                    *
+                  </span>{' '}
+                  <span className="sr-only">with an asterisk </span>
+                  are required.
                 </p>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
-                      <Input
-                        id="name"
-                        name="name"
+
+                <form
+                  ref={formRef}
+                  onSubmit={handleSubmit}
+                  noValidate
+                  className="mt-6 space-y-5"
+                >
+                  {/* Honeypot — hidden from people, visible to bots. */}
+                  <div className="absolute left-[-9999px]" aria-hidden="true">
+                    <label htmlFor={id('website')}>
+                      Leave this field empty
+                      <input
+                        id={id('website')}
                         type="text"
-                        required
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className="glass border-white/20 focus:border-purple-400"
-                        placeholder="Enter your full name"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
                       />
-                    </div>
+                    </label>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
+                      <Label htmlFor={id('name')}>
+                        Full name <span className="text-destructive">*</span>
+                      </Label>
                       <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        value={formData.email}
+                        {...fieldProps('name')}
+                        type="text"
+                        autoComplete="name"
+                        value={values.name}
                         onChange={handleInputChange}
-                        className="glass border-white/20 focus:border-purple-400"
-                        placeholder="Enter your email"
+                        placeholder="Priya Sharma"
                       />
+                      {renderError('name')}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor={id('email')}>
+                        Email address <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        {...fieldProps('email')}
+                        type="email"
+                        inputMode="email"
+                        autoComplete="email"
+                        value={values.email}
+                        onChange={handleInputChange}
+                        placeholder="priya@company.com"
+                      />
+                      {renderError('email')}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
+                      <Label htmlFor={id('phone')}>Phone number</Label>
                       <Input
-                        id="phone"
-                        name="phone"
+                        {...fieldProps('phone')}
                         type="tel"
-                        value={formData.phone}
+                        inputMode="tel"
+                        autoComplete="tel"
+                        value={values.phone}
                         onChange={handleInputChange}
-                        className="glass border-white/20 focus:border-purple-400"
-                        placeholder="Enter your phone number"
+                        placeholder="+91 98765 43210"
                       />
+                      {renderError('phone')}
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="company" className="text-sm font-medium">Company Name</Label>
+                      <Label htmlFor={id('company')}>Company</Label>
                       <Input
-                        id="company"
-                        name="company"
+                        {...fieldProps('company')}
                         type="text"
-                        value={formData.company}
+                        autoComplete="organization"
+                        value={values.company}
                         onChange={handleInputChange}
-                        className="glass border-white/20 focus:border-purple-400"
-                        placeholder="Enter your company name"
+                        placeholder="Your company name"
                       />
+                      {renderError('company')}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="inquiryType" className="text-sm font-medium">Type of Inquiry *</Label>
-                    <Select value={formData.inquiryType} onValueChange={handleSelectChange}>
-                      <SelectTrigger className="glass border-white/20 focus:border-purple-400">
-                        <SelectValue placeholder="Select inquiry type" />
+                    <Label htmlFor={id('inquiryType')}>
+                      Type of enquiry <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={values.inquiryType}
+                      onValueChange={(value) => setField('inquiryType', value)}
+                    >
+                      <SelectTrigger
+                        id={id('inquiryType')}
+                        data-field="inquiryType"
+                        aria-invalid={errors.inquiryType ? true : undefined}
+                        aria-describedby={
+                          errors.inquiryType ? id('inquiryType-error') : undefined
+                        }
+                        className={cn(
+                          errors.inquiryType &&
+                            'border-destructive focus-visible:ring-destructive',
+                        )}
+                      >
+                        <SelectValue placeholder="Select a type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="quote">Request Quote</SelectItem>
-                        <SelectItem value="technical">Technical Support</SelectItem>
-                        <SelectItem value="product">Product Information</SelectItem>
-                        <SelectItem value="partnership">Partnership</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        {inquiryTypes.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
+                    {renderError('inquiryType')}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-sm font-medium">Subject *</Label>
+                    <Label htmlFor={id('subject')}>
+                      Subject <span className="text-destructive">*</span>
+                    </Label>
                     <Input
-                      id="subject"
-                      name="subject"
+                      {...fieldProps('subject')}
                       type="text"
-                      required
-                      value={formData.subject}
+                      value={values.subject}
                       onChange={handleInputChange}
-                      className="glass border-white/20 focus:border-purple-400"
-                      placeholder="Enter message subject"
+                      placeholder="Calcite powder, 400 mesh, 20 T/month"
                     />
+                    {renderError('subject')}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-sm font-medium">Message *</Label>
+                    <Label htmlFor={id('message')}>
+                      Message <span className="text-destructive">*</span>
+                    </Label>
                     <Textarea
-                      id="message"
-                      name="message"
-                      required
+                      {...fieldProps('message')}
                       rows={6}
-                      value={formData.message}
+                      value={values.message}
                       onChange={handleInputChange}
-                      className="glass border-white/20 focus:border-purple-400 resize-none"
-                      placeholder="Enter your message here..."
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      * Required fields
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="gradient-primary text-white border-0 shadow-lg hover-lift px-8 py-3"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Send Message
-                        </>
+                      placeholder="Grade, mesh size, monthly volume, delivery location and any specification limits you need us to meet."
+                      className={cn(
+                        'resize-y',
+                        errors.message &&
+                          'border-destructive focus-visible:ring-destructive',
                       )}
-                    </Button>
+                    />
+                    {renderError('message')}
                   </div>
 
-                  {submitStatus === 'success' && (
-                    <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-4 rounded-lg">
-                      <CheckCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium">Message sent successfully! We'll get back to you soon.</span>
-                    </div>
-                  )}
+                  {/* Status is announced to assistive tech, not just shown. */}
+                  <div role="status" aria-live="polite">
+                    {status === 'success' && (
+                      <p className="flex items-start gap-2 rounded-lg border border-success/30 bg-success/10 p-4 text-sm font-medium text-success">
+                        <CheckCircle2
+                          className="h-4 w-4 shrink-0 translate-y-0.5"
+                          aria-hidden="true"
+                        />
+                        Message sent. We'll reply within one business day.
+                      </p>
+                    )}
+                    {status === 'error' && (
+                      <p className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm font-medium text-destructive">
+                        <AlertCircle
+                          className="h-4 w-4 shrink-0 translate-y-0.5"
+                          aria-hidden="true"
+                        />
+                        We couldn't send that. Please try again, or email{' '}
+                        <a className="underline" href={`mailto:${company.email}`}>
+                          {company.email}
+                        </a>
+                        .
+                      </p>
+                    )}
+                  </div>
 
-                  {submitStatus === 'error' && (
-                    <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-4 rounded-lg">
-                      <AlertCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium">Failed to send message. Please try again.</span>
-                    </div>
-                  )}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto"
+                    data-testid="button-submit-contact"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span
+                          aria-hidden="true"
+                          className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                        />
+                        Sending…
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" aria-hidden="true" />
+                        Send message
+                      </>
+                    )}
+                  </Button>
                 </form>
               </CardContent>
             </Card>

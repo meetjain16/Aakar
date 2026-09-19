@@ -2,12 +2,98 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Aakar Mineral Industries | Dolomite, Talc & Calcite Powder Manufacturer in Udaipur</title>
+    <meta
+      name="description"
+      content="Aakar Mineral Industries manufactures high-purity dolomite, talc, calcite, limestone, silica and china clay powders in Udaipur, Rajasthan. Batch-tested minerals supplied across India for paints, plastics, ceramics, rubber, paper and pharma."
+    />
+    <link rel="canonical" href="https://www.aakarmineral.com/" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Colour the browser chrome to match whichever theme is active -->
+    <meta name="theme-color" content="#fbf6f1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#241917" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Aakar Mineral Industries" />
+    <meta property="og:title" content="Aakar Mineral Industries | Industrial Mineral Powder Manufacturer" />
+    <meta
+      property="og:description"
+      content="High-purity dolomite, talc, calcite, limestone, silica and china clay powders from Udaipur, Rajasthan. Batch-tested and delivered across India."
+    />
+    <meta property="og:url" content="https://www.aakarmineral.com/" />
+    <meta property="og:locale" content="en_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Aakar Mineral Industries | Industrial Mineral Powder Manufacturer" />
+    <meta
+      name="twitter:description"
+      content="High-purity dolomite, talc, calcite, limestone, silica and china clay powders from Udaipur, Rajasthan."
+    />
+
+    <!-- Fonts: preconnect first so the stylesheet request isn't serialised behind DNS+TLS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Aakar Mineral Industries",
+        "description": "Manufacturer of industrial mineral powders including dolomite, talc, calcite, limestone, silica and china clay.",
+        "url": "https://www.aakarmineral.com/",
+        "email": "aakarminerals@gmail.com",
+        "telephone": "+91-97998-96949",
+        "foundingDate": "2013",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "F-61, Road Number 2, Mewar Industrial Area, Madri",
+          "addressLocality": "Udaipur",
+          "postalCode": "313001",
+          "addressRegion": "Rajasthan",
+          "addressCountry": "IN"
+        },
+        "areaServed": "IN"
+      }
+    </script>
+
+    <script>
+      // Apply the stored theme before first paint. Running this in a React
+      // effect instead causes a flash of the wrong theme on every load.
+      (function () {
+        try {
+          var stored = localStorage.getItem("aakar-theme");
+          var dark =
+            stored === "dark" ||
+            (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+        } catch (e) {
+          /* private mode / blocked storage — fall through to the light theme */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="padding: 2rem; font-family: system-ui, sans-serif">
+        <h1>Aakar Mineral Industries</h1>
+        <p>
+          This site needs JavaScript enabled. To reach us directly, call
+          <a href="tel:+919799896949">+91 97998 96949</a> or email
+          <a href="mailto:aakarminerals@gmail.com">aakarminerals@gmail.com</a>.
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

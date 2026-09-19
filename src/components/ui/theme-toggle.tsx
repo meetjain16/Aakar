@@ -1,38 +1,34 @@
-import { useEffect, useState } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 
-const THEME_KEY = 'aakar-theme';
+import { cn } from '../../lib/utils';
+import { useTheme } from '../../hooks/use-theme';
 
-export default function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    try {
-      const saved = localStorage.getItem(THEME_KEY) as 'light' | 'dark' | null;
-      if (saved) return saved;
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-    } catch (e) {}
-    return 'light';
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-    } catch (e) {}
-  }, [theme]);
+export default function ThemeToggle({ className }: { className?: string }) {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
     <button
-      aria-label="Toggle theme"
-      onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-      className="inline-flex items-center justify-center rounded-md p-2 hover-elevate active-elevate-2 border border-transparent bg-transparent"
+      type="button"
+      onClick={toggleTheme}
+      // The control is a switch, so expose its state rather than relying on the
+      // icon alone; the label says what pressing it will do.
+      role="switch"
+      aria-checked={isDark}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      className={cn(
+        'inline-flex h-9 w-9 items-center justify-center rounded-md border border-border',
+        'bg-card text-foreground hover-elevate active-elevate-2',
+        className,
+      )}
       data-testid="button-theme-toggle"
     >
-      {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      {isDark ? (
+        <Sun className="h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+      ) : (
+        <Moon className="h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+      )}
     </button>
   );
 }

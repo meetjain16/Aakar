@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local environment files — these hold API keys and must never be committed.
+# Commit .env.example instead.
+.env
+.env.*
+!.env.example
