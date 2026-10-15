@@ -1,26 +1,12 @@
 import { Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'wouter';
 
 import { LogoTile } from './Logo';
 import { Separator } from './ui/separator';
-import {
-  company,
-  industries,
-  navItems,
-  products,
-  type SectionId,
-} from '../lib/site';
+import { company, industries, navItems, products, routes } from '../lib/site';
 
-interface FooterProps {
-  onSectionChange?: (section: SectionId) => void;
-}
-
-export default function Footer({ onSectionChange }: FooterProps) {
+export default function Footer() {
   const year = new Date().getFullYear();
-
-  const goTo = (section: SectionId) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    onSectionChange?.(section);
-  };
 
   return (
     <footer
@@ -91,14 +77,13 @@ export default function Footer({ onSectionChange }: FooterProps) {
                 <ul className="mt-4 space-y-2.5">
                   {navItems.map((item) => (
                     <li key={item.id}>
-                      <a
-                        href={`#${item.id}`}
-                        onClick={goTo(item.id)}
+                      <Link
+                        href={item.path}
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                         data-testid={`button-footer-nav-${item.id}`}
                       >
                         {item.label}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -111,14 +96,13 @@ export default function Footer({ onSectionChange }: FooterProps) {
                 <ul className="mt-4 space-y-2.5">
                   {products.map((product) => (
                     <li key={product.slug}>
-                      <a
-                        href="#products"
-                        onClick={goTo('products')}
+                      <Link
+                        href={routes.products}
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                         data-testid={`button-footer-product-${product.slug}`}
                       >
                         {product.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -131,14 +115,13 @@ export default function Footer({ onSectionChange }: FooterProps) {
                 <ul className="mt-4 space-y-2.5">
                   {industries.slice(0, 6).map((industry) => (
                     <li key={industry.slug}>
-                      <a
-                        href="#industries"
-                        onClick={goTo('industries')}
+                      <Link
+                        href={routes.industries}
                         className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                         data-testid={`button-footer-industry-${industry.slug}`}
                       >
                         {industry.title}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

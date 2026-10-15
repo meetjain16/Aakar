@@ -1,6 +1,5 @@
 import { Eye, Shield, Target, Zap } from 'lucide-react';
 
-import SectionHeading from './SectionHeading';
 import { Card, CardContent } from './ui/card';
 import { company, images, industries, products, yearsInBusiness } from '../lib/site';
 
@@ -41,17 +40,11 @@ export default function AboutSection() {
 
   return (
     <section
-      aria-labelledby="about-heading"
-      className="border-t border-border bg-background py-20 lg:py-28"
+      aria-label="About us"
+      className="border-t border-border bg-background pb-20 pt-12 lg:pb-28 lg:pt-14"
       data-testid="section-about"
     >
       <div className="section-shell">
-        <SectionHeading
-          id="about-heading"
-          eyebrow="About us"
-          title={`Mineral processing from ${company.city}, since ${company.foundedYear}`}
-          description={`A trusted name in mineral powder manufacturing, producing dolomite, talc, calcite, limestone, silica and china clay for the diverse requirements of industries across India and beyond.`}
-        />
 
         <div className="mt-16 grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
           <div>
@@ -63,7 +56,7 @@ export default function AboutSection() {
                 decoding="async"
                 width={1024}
                 height={768}
-                className="aspect-4/3 w-full object-cover"
+                className="photo-warm aspect-4/3 w-full object-cover"
               />
             </div>
 

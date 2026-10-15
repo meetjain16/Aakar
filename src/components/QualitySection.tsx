@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   Award,
   BarChart3,
   CheckCircle2,
@@ -9,10 +10,13 @@ import {
   Users,
 } from 'lucide-react';
 
+import { Link } from 'wouter';
+
 import SectionHeading from './SectionHeading';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import type { SectionId } from '../lib/site';
+import { cn } from '../lib/utils';
+import { routes } from '../lib/site';
 
 const capabilities = [
   {
@@ -83,26 +87,30 @@ const pillars = [
 ];
 
 interface QualitySectionProps {
-  onNavigate?: (section: SectionId) => void;
+  /** Home page shows the capability figures only. */
+  preview?: boolean;
 }
 
-export default function QualitySection({ onNavigate }: QualitySectionProps) {
+export default function QualitySection({ preview = false }: QualitySectionProps) {
   return (
     <section
-      aria-labelledby="quality-heading"
-      className="border-t border-border bg-muted/40 py-20 lg:py-28"
+      aria-labelledby={preview ? 'quality-heading' : undefined}
+      aria-label={preview ? undefined : 'Quality and facilities'}
+      className={cn('border-t border-border bg-muted/40 pb-20 lg:pb-28', preview ? 'pt-20 lg:pt-28' : 'pt-12 lg:pt-14')}
       data-testid="section-quality"
     >
       <div className="section-shell">
-        <SectionHeading
-          id="quality-heading"
-          eyebrow="Quality & facilities"
-          title="Consistency is a process, not a promise"
-          description="Grinding minerals is easy. Grinding them to the same specification for years is what our plant, lab and paperwork are built around."
-        />
+        {preview && (
+          <SectionHeading
+            id="quality-heading"
+            eyebrow="Quality & facilities"
+            title="Consistency is a process, not a promise"
+            description="Grinding minerals is easy. Grinding them to the same specification for years is what our plant, lab and paperwork are built around."
+          />
+        )}
 
         {/* Capability figures */}
-        <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border lg:grid-cols-4">
+        <dl className={cn('grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border lg:grid-cols-4', preview && 'mt-16')}>
           {capabilities.map(({ icon: Icon, value, unit, title }) => (
             <div
               key={title}
@@ -128,7 +136,8 @@ export default function QualitySection({ onNavigate }: QualitySectionProps) {
           ))}
         </dl>
 
-        {/* Pillars */}
+        {/* Pillars — full page only. */}
+        {!preview && (
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {pillars.map(({ icon: Icon, title, description, details }) => (
             <Card
@@ -172,7 +181,18 @@ export default function QualitySection({ onNavigate }: QualitySectionProps) {
             </Card>
           ))}
         </div>
+        )}
 
+        {preview ? (
+          <div className="mt-12 text-center">
+            <Button size="lg" variant="outline" asChild data-testid="button-quality-more">
+              <Link href={routes.quality}>
+                How we hold that standard
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
         <div className="mt-14 rounded-2xl border border-border bg-card p-8 shadow-sm sm:p-10">
           <div className="mx-auto max-w-3xl text-center">
             <h3 className="font-heading text-xl font-semibold text-foreground">
@@ -183,15 +203,12 @@ export default function QualitySection({ onNavigate }: QualitySectionProps) {
               for the grade you are evaluating, and test it against your own
               acceptance criteria before placing a first order.
             </p>
-            <Button
-              className="mt-6"
-              onClick={() => onNavigate?.('contact')}
-              data-testid="button-request-coa"
-            >
-              Request a COA or sample
+            <Button className="mt-6" asChild data-testid="button-request-coa">
+              <Link href={routes.contact}>Request a COA or sample</Link>
             </Button>
           </div>
         </div>
+        )}
       </div>
     </section>
   );

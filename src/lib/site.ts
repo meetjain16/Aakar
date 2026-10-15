@@ -7,6 +7,7 @@
  * that appears in more than one place now lives here.
  */
 
+import { routes, type SectionId } from './routes';
 import dolomiteImage from '../assets/attached_assets/generated_images/Dolomite_mineral_powder_0d149fcd.webp';
 import talcImage from '../assets/attached_assets/generated_images/Talc_powder_product_dc4e4f6a.webp';
 import calciteImage from '../assets/Calcite_mineral_powder_f858afa1.webp';
@@ -15,6 +16,9 @@ import silicaImage from '../assets/attached_assets/generated_images/Silica_powde
 import chinaClayImage from '../assets/attached_assets/generated_images/China_clay_powder_fced85c3.webp';
 import facilityImage from '../assets/attached_assets/generated_images/Manufacturing_facility_exterior_e5c79976.webp';
 import paintApplicationImage from '../assets/attached_assets/generated_images/Paint_industry_application_bac5aef0.webp';
+
+export { routes, SITE_ORIGIN } from './routes';
+export type { SectionId } from './routes';
 
 export const company = {
   name: 'Aakar Mineral Industries',
@@ -50,26 +54,82 @@ export const images = {
   paintApplication: paintApplicationImage,
 } as const;
 
-export type SectionId =
-  | 'home'
-  | 'about'
-  | 'products'
-  | 'industries'
-  | 'quality'
-  | 'contact';
 
-export const navItems: ReadonlyArray<{
+
+export interface NavItem {
   id: SectionId;
+  path: string;
+  /** Full name, used in the footer and the mobile menu. */
   label: string;
+  /** Condensed name for the desktop bar, which is tight on space. */
   shortLabel: string;
-}> = [
-  { id: 'home', label: 'Home', shortLabel: 'Home' },
-  { id: 'about', label: 'About Us', shortLabel: 'About' },
-  { id: 'products', label: 'Products', shortLabel: 'Products' },
-  { id: 'industries', label: 'Industries We Serve', shortLabel: 'Industries' },
-  { id: 'quality', label: 'Quality & Facilities', shortLabel: 'Quality' },
-  { id: 'contact', label: 'Contact Us', shortLabel: 'Contact' },
+  /** <title> for the page, minus the company suffix. */
+  title: string;
+  /** Per-page meta description. */
+  description: string;
+}
+
+export const navItems: ReadonlyArray<NavItem> = [
+  {
+    id: 'home',
+    path: routes.home,
+    label: 'Home',
+    shortLabel: 'Home',
+    title: 'Industrial Mineral Powder Manufacturer in Udaipur',
+    description:
+      'Aakar Mineral Industries manufactures high-purity dolomite, talc, calcite, limestone, silica and china clay powders in Udaipur, Rajasthan, supplied batch-tested across India.',
+  },
+  {
+    id: 'about',
+    path: routes.about,
+    label: 'About Us',
+    shortLabel: 'About',
+    title: 'About Us',
+    description:
+      'Mineral processing from Udaipur since 2013 — our story, our values and the standards behind every batch we ship.',
+  },
+  {
+    id: 'products',
+    path: routes.products,
+    label: 'Products',
+    shortLabel: 'Products',
+    title: 'Mineral Powder Products',
+    description:
+      'Dolomite, talc, calcite, limestone, silica and china clay powders, milled to your mesh with published brightness, purity and moisture specifications.',
+  },
+  {
+    id: 'industries',
+    path: routes.industries,
+    label: 'Industries We Serve',
+    shortLabel: 'Industries',
+    title: 'Industries We Serve',
+    description:
+      'Mineral fillers and raw materials for paints, plastics, ceramics, rubber, paper, adhesives, detergents, construction and pharmaceuticals.',
+  },
+  {
+    id: 'quality',
+    path: routes.quality,
+    label: 'Quality & Facilities',
+    shortLabel: 'Quality',
+    title: 'Quality & Facilities',
+    description:
+      'In-house laboratory, air-classified milling, documented compliance and 10,000 tonnes a month of production capacity.',
+  },
+  {
+    id: 'contact',
+    path: routes.contact,
+    label: 'Contact Us',
+    shortLabel: 'Contact',
+    title: 'Contact Us',
+    description:
+      'Request a quote, a certificate of analysis or a sample. Tell us the grade, mesh and volume and we reply within one business day.',
+  },
 ];
+
+/** Lookup used by the page-metadata hook. */
+export const navItemById = Object.fromEntries(
+  navItems.map((item) => [item.id, item]),
+) as Record<SectionId, NavItem>;
 
 export interface Product {
   slug: string;

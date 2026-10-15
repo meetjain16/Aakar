@@ -12,11 +12,14 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+import { Link } from 'wouter';
+
 import SectionHeading from './SectionHeading';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import { images, industries, type SectionId } from '../lib/site';
+import { cn } from '../lib/utils';
+import { images, industries, routes } from '../lib/site';
 
 /** Icons live here rather than in site.ts so the data module stays view-free. */
 const industryIcons: Record<string, LucideIcon> = {
@@ -32,26 +35,36 @@ const industryIcons: Record<string, LucideIcon> = {
 };
 
 interface IndustriesSectionProps {
-  onNavigate?: (section: SectionId) => void;
+  /** Home page shows a trimmed grid without the feature banner. */
+  preview?: boolean;
+  limit?: number;
 }
 
-export default function IndustriesSection({ onNavigate }: IndustriesSectionProps) {
+export default function IndustriesSection({
+  preview = false,
+  limit,
+}: IndustriesSectionProps) {
+  const shown = limit ? industries.slice(0, limit) : industries;
   return (
     <section
-      aria-labelledby="industries-heading"
-      className="border-t border-border bg-background py-20 lg:py-28"
+      aria-labelledby={preview ? 'industries-heading' : undefined}
+      aria-label={preview ? undefined : 'Industries we serve'}
+      className={cn('border-t border-border bg-background pb-20 lg:pb-28', preview ? 'pt-20 lg:pt-28' : 'pt-12 lg:pt-14')}
       data-testid="section-industries"
     >
       <div className="section-shell">
-        <SectionHeading
-          id="industries-heading"
-          eyebrow="Industries we serve"
-          title="Nine sectors, one standard of consistency"
-          description="The grade that works in a wall putty is not the grade that works in a masterbatch. We match the mineral to the process."
-        />
+        {preview && (
+          <SectionHeading
+            id="industries-heading"
+            eyebrow="Industries we serve"
+            title="Nine sectors, one standard of consistency"
+            description="The grade that works in a wall putty is not the grade that works in a masterbatch. We match the mineral to the process."
+          />
+        )}
 
-        {/* Feature banner */}
-        <div className="mt-16 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        {/* Feature banner — full page only; the home teaser stays compact. */}
+        {!preview && (
+        <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           <div className="grid lg:grid-cols-2">
             <img
               src={images.paintApplication}
@@ -60,7 +73,7 @@ export default function IndustriesSection({ onNavigate }: IndustriesSectionProps
               decoding="async"
               width={1024}
               height={768}
-              className="h-full min-h-56 w-full object-cover"
+              className="photo-warm h-full min-h-56 w-full object-cover"
             />
             <div className="flex flex-col justify-center p-8 lg:p-12">
               <h3 className="font-heading text-2xl font-bold tracking-tight text-foreground">
@@ -72,27 +85,23 @@ export default function IndustriesSection({ onNavigate }: IndustriesSectionProps
                 their formulations do not need re-tuning between deliveries.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  onClick={() => onNavigate?.('contact')}
-                  data-testid="button-industry-consultation"
-                >
-                  Talk to a technical advisor
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                <Button asChild data-testid="button-industry-consultation">
+                  <Link href={routes.contact}>
+                    Talk to a technical advisor
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => onNavigate?.('products')}
-                  data-testid="button-industry-products"
-                >
-                  Browse grades
+                <Button variant="outline" asChild data-testid="button-industry-products">
+                  <Link href={routes.products}>Browse grades</Link>
                 </Button>
               </div>
             </div>
           </div>
         </div>
+        )}
 
         <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {industries.map((industry) => {
+          {shown.map((industry) => {
             const Icon = industryIcons[industry.slug] ?? Boxes;
             return (
               <li key={industry.slug} className="flex">
@@ -130,17 +139,27 @@ export default function IndustriesSection({ onNavigate }: IndustriesSectionProps
           })}
         </ul>
 
+        {preview ? (
+          <div className="mt-12 text-center">
+            <Button size="lg" variant="outline" asChild data-testid="button-all-industries">
+              <Link href={routes.industries}>
+                Explore all {industries.length} industries
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
         <p className="mt-10 text-center text-muted-foreground">
           Working in a sector that isn't listed?{' '}
-          <button
-            type="button"
-            onClick={() => onNavigate?.('contact')}
+          <Link
+            href={routes.contact}
             className="rounded font-medium text-primary underline underline-offset-4 hover:no-underline"
           >
             Tell us about your application
-          </button>
+          </Link>
           .
         </p>
+        )}
       </div>
     </section>
   );

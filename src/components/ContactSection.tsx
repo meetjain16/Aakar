@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Clock, Mail, MapPin, Phone, Send, UserRound } from 'lucide-react';
 
-import SectionHeading from './SectionHeading';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
@@ -16,7 +15,7 @@ import {
 import { Textarea } from './ui/textarea';
 import { useToast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
-import { company, inquiryTypes } from '../lib/site';
+import { company, inquiryTypes, products } from '../lib/site';
 
 /** Endpoint is configurable per environment; the literal is only a fallback. */
 const FORM_ENDPOINT =
@@ -124,12 +123,23 @@ const contactChannels = [
   },
 ];
 
-interface ContactSectionProps {
-  /** Pre-fills the subject when a visitor clicks "Request a quote" on a product. */
-  prefill?: { subject?: string; inquiryType?: string } | null;
+/**
+ * Reads `?product=<slug>` so a "Request a quote" click on the Products page
+ * arrives here with the subject already filled in. Using the URL rather than
+ * component state means the pre-filled form survives a refresh and can be
+ * linked to directly.
+ */
+function readPrefillFromUrl(): { subject: string; inquiryType: string } | null {
+  if (typeof window === 'undefined') return null;
+  const slug = new URLSearchParams(window.location.search).get('product');
+  if (!slug) return null;
+  const product = products.find((candidate) => candidate.slug === slug);
+  if (!product) return null;
+  return { subject: `Quote request: ${product.name}`, inquiryType: 'quote' };
 }
 
-export default function ContactSection({ prefill }: ContactSectionProps) {
+export default function ContactSection() {
+  const prefill = readPrefillFromUrl();
   const [values, setValues] = useState<ContactFormData>(emptyForm);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -143,14 +153,18 @@ export default function ContactSection({ prefill }: ContactSectionProps) {
   // Honeypot: a real visitor never fills this, bots usually do.
   const [honeypot, setHoneypot] = useState('');
 
+  // readPrefillFromUrl() returns a fresh object each render, so depend on the
+  // primitive values instead — otherwise this effect would loop.
+  const prefillSubject = prefill?.subject;
+  const prefillType = prefill?.inquiryType;
   useEffect(() => {
-    if (!prefill) return;
+    if (!prefillSubject && !prefillType) return;
     setValues((current) => ({
       ...current,
-      subject: prefill.subject ?? current.subject,
-      inquiryType: prefill.inquiryType ?? current.inquiryType,
+      subject: prefillSubject ?? current.subject,
+      inquiryType: prefillType ?? current.inquiryType,
     }));
-  }, [prefill]);
+  }, [prefillSubject, prefillType]);
 
   // Abort an in-flight request if the component unmounts, so the response
   // handler never calls setState on a dead component.
@@ -268,17 +282,11 @@ export default function ContactSection({ prefill }: ContactSectionProps) {
 
   return (
     <section
-      aria-labelledby="contact-heading"
-      className="border-t border-border bg-background py-20 lg:py-28"
+      aria-label="Contact"
+      className="border-t border-border bg-background pb-20 pt-12 lg:pb-28 lg:pt-14"
       data-testid="section-contact"
     >
       <div className="section-shell">
-        <SectionHeading
-          id="contact-heading"
-          eyebrow="Contact"
-          title="Tell us what you need to make"
-          description="Send the specification, the volume and the timeline. You will get a real answer from someone who knows the plant — usually within one business day."
-        />
 
         <div className="mt-16 grid gap-10 lg:grid-cols-5 lg:gap-12">
           {/* Channels */}

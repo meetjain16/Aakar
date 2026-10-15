@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Award, ChevronLeft, ChevronRight, Factory, Truck } from 'lucide-react';
 
+import { Link } from 'wouter';
+
 import { Button } from './ui/button';
 import { cn } from '../lib/utils';
 import { useReducedMotion } from '../hooks/use-reduced-motion';
-import { company, products, yearsInBusiness, type SectionId } from '../lib/site';
+import { company, products, routes, yearsInBusiness } from '../lib/site';
 
 const SLIDE_INTERVAL_MS = 6000;
 
@@ -33,11 +35,7 @@ const trustPoints = [
   },
 ];
 
-interface HeroSectionProps {
-  onNavigate?: (section: SectionId) => void;
-}
-
-export default function HeroSection({ onNavigate }: HeroSectionProps) {
+export default function HeroSection() {
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const prefersReducedMotion = useReducedMotion();
@@ -77,7 +75,7 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative isolate flex min-h-[calc(100svh-5rem)] items-center overflow-hidden bg-[oklch(0.215_0.016_28)]"
+      className="relative isolate flex min-h-[min(calc(100svh-5rem),52rem)] items-center overflow-hidden bg-[var(--hero-bg)] py-4"
     >
       {/* Background slideshow. Decorative: the product names are announced by
           the live region on the carousel below, not by these images. */}
@@ -93,15 +91,17 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
             decoding="async"
             className={cn(
               'absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out',
-              i === index ? 'opacity-40' : 'opacity-0',
+              i === index
+                ? 'opacity-[var(--hero-image-opacity)]'
+                : 'opacity-0',
             )}
           />
         ))}
 
         {/* Two-stop scrim: keeps text contrast well above 4.5:1 no matter which
             image is showing. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.175_0.015_28)] via-[oklch(0.175_0.015_28)]/85 to-[oklch(0.175_0.015_28)]/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.175_0.015_28)] via-transparent to-[oklch(0.175_0.015_28)]/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--hero-scrim)]/94 via-[var(--hero-scrim)]/80 to-[var(--hero-scrim)]/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--hero-scrim)] via-transparent to-[var(--hero-scrim)]/55" />
         <div className="texture-grid absolute inset-0 opacity-[0.15]" />
       </div>
 
@@ -109,19 +109,19 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
           {/* Copy */}
           <div className="lg:col-span-7">
-            <p className="eyebrow text-[oklch(0.83_0.062_58)]">
+            <p className="eyebrow text-[var(--hero-accent)]">
               <span className="h-px w-8 bg-current" aria-hidden="true" />
               {company.city}, {company.region} · Since {company.foundedYear}
             </p>
 
             <h1
               id="hero-heading"
-              className="mt-5 max-w-2xl font-heading text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl"
+              className="mt-5 max-w-2xl font-heading text-4xl font-bold leading-[1.1] tracking-tight text-[var(--hero-foreground)] sm:text-5xl lg:text-6xl"
             >
               Industrial mineral powders you can specify once and forget about.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/75">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-[var(--hero-foreground-muted)]">
               With over {yearsInBusiness} years of expertise, we deliver
               premium mineral powders — dolomite, talc, calcite, limestone,
               silica and china clay — crafted with precision to power industries
@@ -129,38 +129,35 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button
-                size="lg"
-                onClick={() => onNavigate?.('contact')}
-                data-testid="button-hero-enquire"
-              >
-                Request a quote
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <Button size="lg" asChild data-testid="button-hero-enquire">
+                <Link href={routes.contact}>
+                  Request a quote
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
               </Button>
 
-              {/* Previously a dead button — now scrolls to the catalogue. */}
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => onNavigate?.('products')}
-                className="border-white/25 bg-white/5 text-white hover:bg-white/10"
+                asChild
+                className="border-[var(--hero-border)] bg-[var(--hero-panel)] text-[var(--hero-foreground)] hover:bg-[var(--hero-control-hover)]"
                 data-testid="button-hero-products"
               >
-                View products
+                <Link href={routes.products}>View products</Link>
               </Button>
             </div>
 
             <dl className="mt-12 grid max-w-xl grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-3">
               {trustPoints.map(({ icon: Icon, value, label }) => (
-                <div key={value} className="border-l-2 border-white/20 pl-4">
+                <div key={value} className="border-l-2 border-[var(--hero-border)] pl-4">
                   <Icon
-                    className="h-5 w-5 text-[oklch(0.83_0.062_58)]"
+                    className="h-5 w-5 text-[var(--hero-accent)]"
                     aria-hidden="true"
                   />
-                  <dt className="mt-2 font-heading text-xl font-bold text-white">
+                  <dt className="mt-2 font-heading text-xl font-bold text-[var(--hero-foreground)]">
                     {value}
                   </dt>
-                  <dd className="mt-0.5 text-sm text-white/65">{label}</dd>
+                  <dd className="mt-0.5 text-sm text-[var(--hero-foreground-muted)]">{label}</dd>
                 </div>
               ))}
             </dl>
@@ -182,7 +179,7 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
                 }
               }}
               onKeyDown={onKeyDown}
-              className="glass-on-dark relative rounded-2xl p-3"
+              className="glass-hero relative rounded-2xl p-3"
             >
               <div className="relative aspect-4/3 overflow-hidden rounded-xl">
                 {slides.map((slide, i) => (
@@ -200,7 +197,7 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
                   />
                 ))}
 
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-4 pt-10">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--hero-caption-scrim)] to-transparent p-4 pt-10">
                   <p className="font-heading text-lg font-semibold text-white">
                     {slides[index].name}
                   </p>
@@ -211,7 +208,7 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
                 type="button"
                 onClick={goPrev}
                 aria-label="Previous product"
-                className="absolute left-5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
+                className="absolute left-5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-[var(--hero-control)] text-[var(--hero-control-foreground)] shadow-sm backdrop-blur-sm transition-colors hover:bg-[var(--hero-control-hover)]"
               >
                 <ChevronLeft className="h-5 w-5" aria-hidden="true" />
               </button>
@@ -219,7 +216,7 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
                 type="button"
                 onClick={goNext}
                 aria-label="Next product"
-                className="absolute right-5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
+                className="absolute right-5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-[var(--hero-control)] text-[var(--hero-control-foreground)] shadow-sm backdrop-blur-sm transition-colors hover:bg-[var(--hero-control-hover)]"
               >
                 <ChevronRight className="h-5 w-5" aria-hidden="true" />
               </button>
@@ -239,7 +236,9 @@ export default function HeroSection({ onNavigate }: HeroSectionProps) {
                     aria-current={i === index}
                     className={cn(
                       'h-1.5 rounded-full transition-all duration-300',
-                      i === index ? 'w-7 bg-white' : 'w-3 bg-white/40 hover:bg-white/70',
+                      i === index
+                        ? 'w-7 bg-[var(--hero-foreground)]'
+                        : 'w-3 bg-[var(--hero-foreground)]/35 hover:bg-[var(--hero-foreground)]/60',
                     )}
                   />
                 ))}

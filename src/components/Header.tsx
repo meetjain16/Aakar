@@ -1,21 +1,20 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Menu, Phone, X } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
 
 import { Button } from './ui/button';
 import { LogoTile } from './Logo';
 import ThemeToggle from './ui/theme-toggle';
 import { cn } from '../lib/utils';
-import { company, navItems, type SectionId } from '../lib/site';
+import { company, navItems, routes, type SectionId } from '../lib/site';
 
 interface HeaderProps {
-  activeSection?: SectionId | string;
-  onSectionChange?: (section: SectionId) => void;
+  /** The page currently rendered, used for the nav's active state. */
+  activePage?: SectionId;
 }
 
-export default function Header({
-  activeSection = 'home',
-  onSectionChange,
-}: HeaderProps) {
+export default function Header({ activePage }: HeaderProps) {
+  const [location] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuId = useId();
@@ -81,10 +80,11 @@ export default function Header({
     return () => media.removeEventListener('change', onChange);
   }, []);
 
-  const handleNavClick = (sectionId: SectionId) => {
-    onSectionChange?.(sectionId);
+  // Any navigation closes the mobile panel — including a back/forward step,
+  // which does not go through the link handlers.
+  useEffect(() => {
     setIsMenuOpen(false);
-  };
+  }, [location]);
 
   return (
     <header
@@ -97,12 +97,8 @@ export default function Header({
     >
       <div className="section-shell flex h-20 items-center justify-between gap-4">
         {/* Brand */}
-        <a
-          href="#home"
-          onClick={(e) => {
-            e.preventDefault();
-            handleNavClick('home');
-          }}
+        <Link
+          href={routes.home}
           className="flex shrink-0 items-center gap-3 rounded-md"
           data-testid="link-company-home"
         >
@@ -118,21 +114,17 @@ export default function Header({
               {company.tagline}
             </span>
           </span>
-        </a>
+        </Link>
 
         {/* Desktop navigation */}
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex items-center gap-1">
             {navItems.map((item) => {
-              const isActive = activeSection === item.id;
+              const isActive = activePage === item.id;
               return (
                 <li key={item.id}>
-                  <a
-                    href={`#${item.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick(item.id);
-                    }}
+                  <Link
+                    href={item.path}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
                       'relative block rounded-md px-3 py-2 text-sm font-medium transition-colors',
@@ -150,7 +142,7 @@ export default function Header({
                         isActive ? 'scale-x-100' : 'scale-x-0',
                       )}
                     />
-                  </a>
+                  </Link>
                 </li>
               );
             })}
@@ -172,12 +164,8 @@ export default function Header({
               below the md breakpoint. */}
           <ThemeToggle />
 
-          <Button
-            onClick={() => handleNavClick('contact')}
-            className="hidden sm:inline-flex"
-            data-testid="button-enquire-now"
-          >
-            Enquire Now
+          <Button className="hidden sm:inline-flex" asChild data-testid="button-enquire-now">
+            <Link href={routes.contact}>Enquire Now</Link>
           </Button>
 
           <Button
@@ -211,15 +199,11 @@ export default function Header({
         <nav aria-label="Mobile" className="section-shell py-4">
           <ul className="space-y-1">
             {navItems.map((item) => {
-              const isActive = activeSection === item.id;
+              const isActive = activePage === item.id;
               return (
                 <li key={item.id}>
-                  <a
-                    href={`#${item.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick(item.id);
-                    }}
+                  <Link
+                    href={item.path}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
                       'block rounded-md px-4 py-3 text-sm font-medium transition-colors',
@@ -230,19 +214,15 @@ export default function Header({
                     data-testid={`button-mobile-nav-${item.id}`}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               );
             })}
           </ul>
 
           <div className="mt-4 space-y-2 border-t border-border pt-4">
-            <Button
-              className="w-full"
-              onClick={() => handleNavClick('contact')}
-              data-testid="button-mobile-enquire"
-            >
-              Enquire Now
+            <Button className="w-full" asChild data-testid="button-mobile-enquire">
+              <Link href={routes.contact}>Enquire Now</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
               <a href={`tel:${company.phoneE164}`}>

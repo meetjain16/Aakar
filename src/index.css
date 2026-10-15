@@ -82,6 +82,27 @@
   --surface-glass-border: oklch(0.265 0.022 25 / 0.10);
   --surface-veil: oklch(0.265 0.022 25 / 0.045);
 
+  /* Hero ------------------------------------------------------------------
+     The hero used to be a hardcoded near-black slab, so in the light theme it
+     read as a foreign block bolted onto a warm cream page. These tokens keep
+     it in the same material as every other section: a light, warm wash in the
+     light theme and a deep brown one in the dark theme. The hero markup reads
+     only these, so it inverts cleanly with the rest of the UI. */
+  --hero-bg: oklch(0.955 0.012 55);
+  --hero-scrim: oklch(0.962 0.011 55);
+  --hero-foreground: oklch(0.255 0.024 25);
+  --hero-foreground-muted: oklch(0.455 0.020 30);
+  --hero-accent: oklch(0.47 0.080 42);
+  --hero-border: oklch(0.265 0.022 25 / 0.14);
+  --hero-panel: oklch(1 0 0 / 0.60);
+  --hero-panel-border: oklch(0.265 0.022 25 / 0.10);
+  --hero-control: oklch(1 0 0 / 0.80);
+  --hero-control-hover: oklch(1 0 0 / 0.95);
+  --hero-control-foreground: oklch(0.265 0.022 25);
+  /* Photos sit behind dark text here, so they stay faint. */
+  --hero-image-opacity: 0.34;
+  --hero-caption-scrim: oklch(0.20 0.02 25 / 0.70);
+
   /* Interaction elevation (see the .hover-elevate utilities below) */
   --elevate-1: oklch(0.265 0.022 25 / 0.05);
   --elevate-2: oklch(0.265 0.022 25 / 0.10);
@@ -182,6 +203,21 @@
   --surface-glass: oklch(0.295 0.016 28 / 0.68);
   --surface-glass-border: oklch(0.946 0.012 51 / 0.12);
   --surface-veil: oklch(0.946 0.012 51 / 0.055);
+
+  --hero-bg: oklch(0.215 0.016 28);
+  --hero-scrim: oklch(0.185 0.015 28);
+  --hero-foreground: oklch(0.975 0.008 60);
+  --hero-foreground-muted: oklch(0.800 0.012 50);
+  --hero-accent: oklch(0.83 0.062 58);
+  --hero-border: oklch(0.946 0.012 51 / 0.20);
+  --hero-panel: oklch(0.946 0.012 51 / 0.10);
+  --hero-panel-border: oklch(0.946 0.012 51 / 0.18);
+  --hero-control: oklch(0.185 0.015 28 / 0.55);
+  --hero-control-hover: oklch(0.185 0.015 28 / 0.78);
+  --hero-control-foreground: oklch(0.975 0.008 60);
+  /* Light text over a dark scrim tolerates a stronger image. */
+  --hero-image-opacity: 0.38;
+  --hero-caption-scrim: oklch(0.14 0.015 28 / 0.78);
 
   --elevate-1: oklch(0.946 0.012 51 / 0.06);
   --elevate-2: oklch(0.946 0.012 51 / 0.12);
@@ -375,11 +411,28 @@
 
   /* Used for the hero, which sits on a dark photographic background in both
      themes — so it keeps a light-on-dark treatment regardless of theme. */
-  .glass-on-dark {
-    background-color: oklch(1 0 0 / 0.10);
-    border: 1px solid oklch(1 0 0 / 0.18);
+  /* Panel used inside the hero. Reads the hero tokens rather than assuming a
+     dark backdrop, so it works in both themes. (Replaces .glass-on-dark,
+     which was permanently white-on-dark.) */
+  .glass-hero {
+    background-color: var(--hero-panel);
+    border: 1px solid var(--hero-panel-border);
     backdrop-filter: blur(16px) saturate(140%);
     -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  /* Environment/context photography (the plant exterior, an application shot)
+     arrives with cold blue skies and green grass, which fought the warm
+     palette everywhere it appeared. Pulling the saturation down and biasing
+     warm settles it into the same material as the rest of the page.
+     Deliberately NOT applied to product images: those show the goods, and
+     recolouring a mineral powder would misrepresent it. */
+  .photo-warm {
+    filter: saturate(0.45) sepia(0.28) contrast(1.03) brightness(1.02);
+  }
+
+  .dark .photo-warm {
+    filter: saturate(0.42) sepia(0.26) contrast(0.98) brightness(0.88);
   }
 
   /* Section eyebrow label */

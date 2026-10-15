@@ -1,37 +1,44 @@
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'wouter';
 
 import SectionHeading from './SectionHeading';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import { products, type SectionId } from '../lib/site';
+import { cn } from '../lib/utils';
+import { products, routes } from '../lib/site';
 
 interface ProductsSectionProps {
-  /** Called with the product name so the contact form can be pre-filled. */
-  onRequestQuote?: (productName: string) => void;
-  onNavigate?: (section: SectionId) => void;
+  /** On the home page we show a teaser; the Products page shows everything. */
+  limit?: number;
+  /** Swaps the closing block for a link through to the full catalogue. */
+  preview?: boolean;
 }
 
 export default function ProductsSection({
-  onRequestQuote,
-  onNavigate,
+  limit,
+  preview = false,
 }: ProductsSectionProps) {
+  const shown = limit ? products.slice(0, limit) : products;
   return (
     <section
-      aria-labelledby="products-heading"
-      className="border-t border-border bg-muted/40 py-20 lg:py-28"
+      aria-labelledby={preview ? 'products-heading' : undefined}
+      aria-label={preview ? undefined : 'Products'}
+      className={cn('border-t border-border bg-muted/40 pb-20 lg:pb-28', preview ? 'pt-20 lg:pt-28' : 'pt-12 lg:pt-14')}
       data-testid="section-products"
     >
       <div className="section-shell">
-        <SectionHeading
-          id="products-heading"
-          eyebrow="Products"
-          title="Six mineral grades, milled to your specification"
-          description="Every grade below is available across a range of mesh sizes. Tell us your application and we will recommend the cut that suits it."
-        />
+        {preview && (
+          <SectionHeading
+            id="products-heading"
+            eyebrow="Products"
+            title={`${products.length} mineral grades, milled to your specification`}
+            description="Every grade below is available across a range of mesh sizes. Tell us your application and we will recommend the cut that suits it."
+          />
+        )}
 
-        <ul className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
+        <ul className={cn('grid gap-6 sm:grid-cols-2 lg:grid-cols-3', preview && 'mt-16')}>
+          {shown.map((product) => (
             <li key={product.slug} className="flex">
               <Card
                 className="lift group flex w-full flex-col overflow-hidden p-0"
@@ -109,11 +116,15 @@ export default function ProductsSection({
                   <Button
                     variant="outline"
                     className="mt-6 w-full"
-                    onClick={() => onRequestQuote?.(product.name)}
+                    asChild
                     data-testid={`button-quote-${product.slug}`}
                   >
-                    Request a quote
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    {/* The product travels in the query string so the contact
+                        form can pre-fill after the navigation. */}
+                    <Link href={`${routes.contact}?product=${product.slug}`}>
+                      Request a quote
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -121,23 +132,32 @@ export default function ProductsSection({
           ))}
         </ul>
 
-        <div className="mt-14 rounded-2xl border border-border bg-card p-8 text-center shadow-sm sm:p-10">
-          <h3 className="font-heading text-xl font-semibold text-foreground">
-            Need a grade that isn't listed?
-          </h3>
-          <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
-            We mill to custom mesh, brightness and moisture targets. Send us the
-            spec sheet and we will tell you honestly whether we can hit it.
-          </p>
-          <Button
-            className="mt-6"
-            onClick={() => onNavigate?.('contact')}
-            data-testid="button-custom-specs"
-          >
-            Discuss custom specifications
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Button>
-        </div>
+        {preview ? (
+          <div className="mt-12 text-center">
+            <Button size="lg" variant="outline" asChild data-testid="button-all-products">
+              <Link href={routes.products}>
+                See all {products.length} grades and their specifications
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-14 rounded-2xl border border-border bg-card p-8 text-center shadow-sm sm:p-10">
+            <h3 className="font-heading text-xl font-semibold text-foreground">
+              Need a grade that isn't listed?
+            </h3>
+            <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
+              We mill to custom mesh, brightness and moisture targets. Send us
+              the spec sheet and we will tell you honestly whether we can hit it.
+            </p>
+            <Button className="mt-6" asChild data-testid="button-custom-specs">
+              <Link href={routes.contact}>
+                Discuss custom specifications
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );
