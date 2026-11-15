@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch } from 'wouter';
+import { Analytics } from '@vercel/analytics/react';
 
 import ErrorBoundary from './components/ErrorBoundary';
 import RouteTransition from './components/RouteTransition';
@@ -33,6 +34,7 @@ export default function App() {
           </Switch>
           {/* Rendered last so toasts stack above page content. */}
           <Toaster />
+          <Analytics />
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>
